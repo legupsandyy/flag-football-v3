@@ -13,25 +13,19 @@ export default async function DkSlatesPage() {
     prisma.user.findMany({ select: { id: true, name: true } }),
   ]);
 
-  const rows = users
-    .map((u: { id: string; name: string }) => {
-      const per = slates.map((s: { scores: { userId: string; points: number }[] }) =>
-        s.scores.find((x) => x.userId === u.id)?.points ?? null
-      );
-      const total = per.reduce((sum: number, v: number | null) => sum + (v ?? 0), 0);
-      return { id: u.id, name: u.name, per, total };
-    })
-    .sort((a: { total: number; name: string }, b: { total: number; name: string }) => b.total - a.total || a.name.localeCompare(b.name));
+  type Row = { id: string; name: string; per: (number | null)[]; total: number; rank: number };
 
-  let lastTotal: number | null = null;
-  let lastRank = 0;
-  const ranked = rows.map((r: { total: number }, i: number) => {
-    if (r.total !== lastTotal) {
-      lastRank = i + 1;
-      lastTotal = r.total;
-    }
-    return { ...r, rank: lastRank };
+  const ranked: Row[] = users.map((u) => {
+    const per = slates.map((s) => s.scores.find((x) => x.userId === u.id)?.points ?? null);
+    const total = per.reduce<number>((sum, v) => sum + (v ?? 0), 0);
+    return { id: u.id, name: u.name, per, total, rank: 0 };
   });
+  ranked.sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
+
+  // People tied on points share a rank number.
+  for (let i = 0; i < ranked.length; i++) {
+    ranked[i].rank = i > 0 && ranked[i].total === ranked[i - 1].total ? ranked[i - 1].rank : i + 1;
+  }
 
   const fmt = (n: number) => (Math.round(n * 100) / 100).toString();
 
@@ -54,7 +48,7 @@ export default async function DkSlatesPage() {
               <tr className="row-line font-mono text-[11px] uppercase tracking-wide text-black/40">
                 <th className="text-left font-normal px-3 py-2 w-8">#</th>
                 <th className="text-left font-normal px-3 py-2">name</th>
-                {slates.map((s: { id: string; label: string }) => (
+                {slates.map((s) => (
                   <th key={s.id} className="text-right font-normal px-3 py-2 whitespace-nowrap">
                     {s.label}
                   </th>
@@ -63,7 +57,7 @@ export default async function DkSlatesPage() {
               </tr>
             </thead>
             <tbody>
-              {ranked.map((r: { id: string; name: string; per: (number | null)[]; total: number; rank: number }) => (
+              {ranked.map((r) => (
                 <tr key={r.id} className={`row-line last:border-b-0 ${r.id === me.id ? "bg-turf/5" : ""}`}>
                   <td className="px-3 py-2 font-mono text-black/40">{r.rank}</td>
                   <td className="px-3 py-2 whitespace-nowrap">{r.name}</td>
