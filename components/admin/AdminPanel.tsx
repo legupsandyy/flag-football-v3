@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import GameForm, { AdminGame } from "./GameForm";
+import DkSection, { DkSlateAdmin } from "./DkSection";
 
 type AdminSlate = { id: string; label: string; salamiLine: number | null; games: AdminGame[] };
 type Member = { id: string; name: string };
@@ -115,7 +116,9 @@ export default function AdminPanel({
   members,
   playoffTeams,
   superBowlWinner,
+  dkSlates,
 }: {
+  dkSlates: DkSlateAdmin[];
   slates: AdminSlate[];
   members: Member[];
   playoffTeams: string;
@@ -145,6 +148,14 @@ export default function AdminPanel({
           </div>
         </section>
       ))}
+
+      <section>
+        <h2 className="font-display text-base mb-1">DK Slates</h2>
+        <p className="text-xs text-black/50 mb-2">
+          Add a slate for each real DraftKings contest, then type in everyone&apos;s score. Leave a box blank if someone didn&apos;t play.
+        </p>
+        <DkSection slates={dkSlates} members={members} />
+      </section>
 
       <section>
         <h2 className="font-display text-base mb-2">Members ({members.length})</h2>

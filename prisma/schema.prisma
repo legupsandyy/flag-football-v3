@@ -19,6 +19,7 @@ model User {
   ouPicks       OuPick[]
   salamiPicks   SalamiPick[]
   superBowlPick SuperBowlPick?
+  dkScores      DkScore[]
 }
 
 model Team {
@@ -169,4 +170,26 @@ model SuperBowlPick {
 model Setting {
   key   String @id
   value String
+}
+
+// ---------------------------------------------------------------------------
+// DK Slates: real DraftKings contest scores, typed in by the commissioner.
+// ---------------------------------------------------------------------------
+
+model DkSlate {
+  id        String    @id @default(cuid())
+  label     String // e.g. "Wild Card Saturday"
+  createdAt DateTime  @default(now())
+  scores    DkScore[]
+}
+
+model DkScore {
+  id      String  @id @default(cuid())
+  slateId String
+  slate   DkSlate @relation(fields: [slateId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  points  Float
+
+  @@unique([slateId, userId])
 }

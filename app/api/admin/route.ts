@@ -80,6 +80,43 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
+    case "saveDkSlate": {
+      const label = typeof body.label === "string" ? body.label.trim() : "";
+      if (!label) return bad("Enter a name for the slate.");
+      if (body.id) await prisma.dkSlate.update({ where: { id: body.id }, data: { label } });
+      else await prisma.dkSlate.create({ data: { label } });
+      return NextResponse.json({ ok: true });
+    }
+
+    case "deleteDkSlate": {
+      if (!body.id) return bad("Missing slate");
+      await prisma.dkSlate.delete({ where: { id: body.id } });
+      return NextResponse.json({ ok: true });
+    }
+
+    case "saveDkScores": {
+      if (!body.slateId || !Array.isArray(body.scores)) return bad("Bad request");
+      const ops = [];
+      for (const row of body.scores as { userId: string; points: unknown }[]) {
+        const pts = num(row.points);
+        const where = { slateId_userId: { slateId: body.slateId, userId: row.userId } };
+        if (pts === null) {
+          // Blank box = no score for this person.
+          ops.push(prisma.dkScore.deleteMany({ where: { slateId: body.slateId, userId: row.userId } }));
+        } else {
+          ops.push(
+            prisma.dkScore.upsert({
+              where,
+              update: { points: pts },
+              create: { slateId: body.slateId, userId: row.userId, points: pts },
+            })
+          );
+        }
+      }
+      await prisma.$transaction(ops);
+      return NextResponse.json({ ok: true });
+    }
+
     case "deleteUser": {
       if (!body.id) return bad("Missing member");
       // Survivor picks don't auto-delete with the user, so clear them first.

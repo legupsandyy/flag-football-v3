@@ -24,11 +24,12 @@ export default async function AdminPage() {
     );
   }
 
-  const [slates, users, playoffTeams, superBowlWinner] = await Promise.all([
+  const [slates, users, playoffTeams, superBowlWinner, dkSlates] = await Promise.all([
     prisma.slate.findMany({ orderBy: { order: "asc" }, include: { games: { orderBy: { kickoff: "asc" } } } }),
     prisma.user.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
     getSetting("playoffTeams"),
     getSetting("superBowlWinner"),
+    prisma.dkSlate.findMany({ orderBy: { createdAt: "asc" }, include: { scores: true } }),
   ]);
 
   return (
@@ -56,6 +57,11 @@ export default async function AdminPage() {
           })),
         }))}
         members={users}
+        dkSlates={dkSlates.map((d) => ({
+          id: d.id,
+          label: d.label,
+          scores: Object.fromEntries(d.scores.map((x) => [x.userId, x.points])),
+        }))}
         playoffTeams={playoffTeams}
         superBowlWinner={superBowlWinner}
       />
