@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { kickerPoints, round2 } from "@/lib/scoring";
+import { getCurrentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const me = await getCurrentUser();
+  if (!me) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+
   const [users, rounds, picks, kickerStats] = await Promise.all([
     prisma.user.findMany({ orderBy: { name: "asc" } }),
     prisma.round.findMany({ orderBy: { order: "asc" } }),

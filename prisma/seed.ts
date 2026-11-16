@@ -127,11 +127,8 @@ const KICKER_STATS: Record<
 
 // Placeholder participant list — replace with your real 18 names, or let
 // people self-register once real auth is wired up.
-const USERS = [
-  "c morriss", "viggs", "paul", "j price", "bendover", "ian", "c spencer",
-  "dan", "umphries", "bozz", "rawbunz", "david", "terzo", "laxner",
-  "sandman", "austin", "amp",
-];
+// Participants now join themselves with the group password, so none are preloaded.
+const USERS: string[] = [];
 
 async function main() {
   for (const t of TEAMS) {

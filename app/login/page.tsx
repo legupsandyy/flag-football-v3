@@ -1,18 +1,14 @@
-import { prisma } from "@/lib/db";
-import LoginForm from "@/components/LoginForm";
+import JoinForm from "@/components/JoinForm";
 
-export const dynamic = "force-dynamic";
-
-export default async function LoginPage() {
-  const users = await prisma.user.findMany({ orderBy: { name: "asc" } });
-
+export default function LoginPage() {
   return (
     <div className="px-5 py-10 max-w-sm mx-auto">
-      <h1 className="font-display text-xl mb-1">Who&apos;s picking?</h1>
-      <p className="text-black/40 text-sm mb-6">
-        Select your name to enter picks. First time in this league? Ask the commissioner to add you.
+      <div className="font-mono text-xs text-black/40 mb-1">postseason / join</div>
+      <h1 className="font-display text-xl mb-1">Join the tournament</h1>
+      <p className="text-black/50 text-sm mb-6">
+        Enter the group password and your name. Already joined? Use the same name to sign back in.
       </p>
-      <LoginForm users={users.map((u) => ({ id: u.id, name: u.name }))} />
+      <JoinForm />
     </div>
   );
 }

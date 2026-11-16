@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import Leaderboard from "@/components/Leaderboard";
+import { getCurrentUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function SurvivorHub() {
+  const me = await getCurrentUser();
+  if (!me) redirect("/login");
   const rounds = await prisma.round.findMany({ orderBy: { order: "asc" } });
 
   return (

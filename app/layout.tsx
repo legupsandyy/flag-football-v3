@@ -33,7 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             ))}
           </nav>
           <div className="text-xs text-black/40 font-mono">
-            {user ? user.name : <Link href="/login" className="text-turf">sign_in</Link>}
+            {user ? user.name : <Link href="/login" className="text-turf">join</Link>}
           </div>
         </header>
         <main>{children}</main>
