@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import GameForm, { AdminGame } from "./GameForm";
 import DkSection, { DkSlateAdmin } from "./DkSection";
+import SurvivorAdmin, { RoundAdmin, PlayerAdmin, KickerAdmin } from "./SurvivorAdmin";
 
 type AdminSlate = { id: string; label: string; salamiLine: number | null; games: AdminGame[] };
 type Member = { id: string; name: string };
@@ -117,7 +118,9 @@ export default function AdminPanel({
   playoffTeams,
   superBowlWinner,
   dkSlates,
+  survivor,
 }: {
+  survivor: { teamIds: string[]; rounds: RoundAdmin[]; players: PlayerAdmin[]; kickers: KickerAdmin[] };
   dkSlates: DkSlateAdmin[];
   slates: AdminSlate[];
   members: Member[];
@@ -148,6 +151,12 @@ export default function AdminPanel({
           </div>
         </section>
       ))}
+
+      <section>
+        <h2 className="font-display text-base mb-1">Survivor</h2>
+        <p className="text-xs text-black/50 mb-2">Set up the teams, rounds and players, then enter scores as games finish.</p>
+        <SurvivorAdmin {...survivor} />
+      </section>
 
       <section>
         <h2 className="font-display text-base mb-1">DK Slates</h2>

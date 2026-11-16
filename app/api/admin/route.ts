@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdmin } from "@/lib/admin";
-import { setSetting } from "@/lib/settings";
+import { getSetting, setSetting } from "@/lib/settings";
+import { NFL_TEAMS } from "@/lib/nflTeams";
+import { syncRoundSlots } from "@/lib/survivorAdmin";
+import { parseYards, slugify } from "@/lib/scoring";
 
 export const dynamic = "force-dynamic";
 
@@ -125,6 +128,167 @@ async function handle(body: any) {
         }
       }
       await prisma.$transaction(ops);
+      return NextResponse.json({ ok: true });
+    }
+
+    case "saveSurvivorTeams": {
+      const ids: string[] = (Array.isArray(body.teamIds) ? body.teamIds : []).filter((id: string) =>
+        NFL_TEAMS.some((t) => t.id === id)
+      );
+      const existing = await prisma.team.findMany({ select: { id: true } });
+      const removed = existing.map((t) => t.id).filter((id) => !ids.includes(id));
+
+      const ops = [];
+      for (const id of ids) {
+        const t = NFL_TEAMS.find((x) => x.id === id)!;
+        ops.push(
+          prisma.team.upsert({
+            where: { id },
+            update: { name: t.name, color: t.color },
+            create: { id: t.id, name: t.name, color: t.color },
+          })
+        );
+      }
+      if (removed.length) {
+        ops.push(
+          prisma.survivorPick.deleteMany({
+            where: { OR: [{ player: { teamId: { in: removed } } }, { kickTeamId: { in: removed } }] },
+          })
+        );
+        ops.push(prisma.player.deleteMany({ where: { teamId: { in: removed } } }));
+        ops.push(prisma.kickerStat.deleteMany({ where: { teamId: { in: removed } } }));
+        ops.push(prisma.team.deleteMany({ where: { id: { in: removed } } }));
+      }
+      await prisma.$transaction(ops);
+
+      // Drop removed teams from every round, then rebuild each round's seats.
+      const rounds = await prisma.round.findMany();
+      for (const r of rounds) {
+        const cur: string[] = JSON.parse(r.teamIds);
+        const kept = cur.filter((id) => ids.includes(id));
+        if (kept.length !== cur.length) {
+          await prisma.round.update({ where: { id: r.id }, data: { teamIds: JSON.stringify(kept) } });
+        }
+        await syncRoundSlots(r.id);
+      }
+
+      // Convenience: fill the pick'em Super Bowl list too, if it's still empty.
+      if (!(await getSetting("playoffTeams")).trim() && ids.length) {
+        await setSetting("playoffTeams", ids.map((id) => NFL_TEAMS.find((t) => t.id === id)!.name).join("\n"));
+      }
+      return NextResponse.json({ ok: true });
+    }
+
+    case "saveRound": {
+      const round = await prisma.round.findUnique({ where: { id: String(body.id) } });
+      if (!round) return bad("Round not found", 404);
+      const lock = new Date(body.lockTime);
+      if (isNaN(lock.getTime())) return bad("Enter a valid lock date and time.");
+      const mult = num(body.multiplier);
+      if (mult === null || mult <= 0) return bad("Enter the multiplier (like 1.33).");
+      const teamIds: string[] = Array.isArray(body.teamIds) ? body.teamIds : [];
+      const real = await prisma.team.findMany({ where: { id: { in: teamIds } }, select: { id: true } });
+      if (real.length !== teamIds.length) return bad("One of those teams isn't set up. Save the team list first.");
+
+      await prisma.round.update({
+        where: { id: round.id },
+        data: { lockTime: lock, multiplier: mult, teamIds: JSON.stringify(teamIds) },
+      });
+      await syncRoundSlots(round.id);
+      return NextResponse.json({ ok: true });
+    }
+
+    case "addPlayers": {
+      const text = typeof body.text === "string" ? body.text : "";
+      const teams = await prisma.team.findMany();
+      const problems: string[] = [];
+      const ops = [];
+      let added = 0;
+      for (const raw of text.split("\n")) {
+        const line = raw.trim();
+        if (!line) continue;
+        const parts = line.split(/[,\t]/).map((p) => p.trim());
+        if (parts.length < 3) {
+          problems.push(`"${line}" — use: Name, Position, Team`);
+          continue;
+        }
+        const [name, posRaw, teamRaw] = parts;
+        const pos = posRaw.toUpperCase();
+        if (!["QB", "RB", "WR", "TE"].includes(pos)) {
+          problems.push(`"${line}" — position must be QB, RB, WR or TE`);
+          continue;
+        }
+        const key = teamRaw.toLowerCase();
+        const team = teams.find((t) => t.id === key || t.name.toLowerCase() === key);
+        if (!team) {
+          problems.push(`"${line}" — team "${teamRaw}" isn't in your playoff team list`);
+          continue;
+        }
+        if (!name) continue;
+        const id = `${team.id}-${slugify(name)}`;
+        ops.push(
+          prisma.player.upsert({
+            where: { id },
+            update: { name, pos, teamId: team.id },
+            create: { id, name, pos, teamId: team.id },
+          })
+        );
+        added++;
+      }
+      if (ops.length) await prisma.$transaction(ops);
+      return NextResponse.json({ ok: true, added, problems });
+    }
+
+    case "savePlayerPoints": {
+      if (!Array.isArray(body.points)) return bad("Bad request");
+      const ops = [];
+      for (const row of body.points as { id: string; dk: unknown }[]) {
+        const v = num(row.dk);
+        ops.push(prisma.player.update({ where: { id: row.id }, data: { dkPoints: v === null ? 0 : v } }));
+      }
+      if (ops.length) await prisma.$transaction(ops);
+      return NextResponse.json({ ok: true });
+    }
+
+    case "deletePlayer": {
+      if (!body.id) return bad("Missing player");
+      await prisma.$transaction([
+        prisma.survivorPick.deleteMany({ where: { playerId: body.id } }),
+        prisma.player.delete({ where: { id: body.id } }),
+      ]);
+      return NextResponse.json({ ok: true });
+    }
+
+    case "clearSurvivorSample": {
+      await prisma.$transaction([
+        prisma.survivorPick.deleteMany({}),
+        prisma.player.deleteMany({}),
+        prisma.kickerStat.deleteMany({}),
+      ]);
+      return NextResponse.json({ ok: true });
+    }
+
+    case "saveKicker": {
+      const teamId = String(body.teamId);
+      const roundId = String(body.roundId);
+      const made = parseYards(body.fgMade);
+      const missed = parseYards(body.fgMissed);
+      if (made === null || missed === null) return bad("Field goal distances must be numbers like 42, 51.");
+      const patMade = Math.max(0, Math.round(num(body.patMade) ?? 0));
+      const patFailed = Math.max(0, Math.round(num(body.patFailed) ?? 0));
+      const data = {
+        fgMade: JSON.stringify(made),
+        fgMissed: JSON.stringify(missed),
+        patMade,
+        patFailed,
+        longest: !!body.longest,
+        gameWinner: !!body.gameWinner,
+      };
+      await prisma.kickerStat.upsert({
+        where: { teamId_roundId: { teamId, roundId } },
+        update: data,
+        create: { teamId, roundId, ...data },
+      });
       return NextResponse.json({ ok: true });
     }
 

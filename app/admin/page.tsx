@@ -16,7 +16,11 @@ async function load() {
   const playoffTeams = await getSetting("playoffTeams");
   const superBowlWinner = await getSetting("superBowlWinner");
   const dkSlates = await prisma.dkSlate.findMany({ orderBy: { createdAt: "asc" }, include: { scores: true } });
-  return { slates, users, playoffTeams, superBowlWinner, dkSlates };
+  const teams = await prisma.team.findMany({ select: { id: true } });
+  const rounds = await prisma.round.findMany({ orderBy: { order: "asc" } });
+  const players = await prisma.player.findMany({ orderBy: { name: "asc" } });
+  const kickers = await prisma.kickerStat.findMany();
+  return { slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers };
 }
 
 export default async function AdminPage() {
@@ -53,7 +57,7 @@ export default async function AdminPage() {
       </div>
     );
   }
-  const { slates, users, playoffTeams, superBowlWinner, dkSlates } = loaded;
+  const { slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers } = loaded;
 
   return (
     <div className="px-5 py-8 max-w-2xl mx-auto">
@@ -87,6 +91,27 @@ export default async function AdminPage() {
         }))}
         playoffTeams={playoffTeams}
         superBowlWinner={superBowlWinner}
+        survivor={{
+          teamIds: teams.map((t) => t.id),
+          rounds: rounds.map((r) => ({
+            id: r.id,
+            label: r.label,
+            lockTime: r.lockTime.toISOString(),
+            multiplier: r.multiplier,
+            teamIds: JSON.parse(r.teamIds) as string[],
+          })),
+          players: players.map((p) => ({ id: p.id, name: p.name, pos: p.pos, teamId: p.teamId, dkPoints: p.dkPoints })),
+          kickers: kickers.map((k) => ({
+            teamId: k.teamId,
+            roundId: k.roundId,
+            fgMade: (JSON.parse(k.fgMade) as number[]).join(", "),
+            fgMissed: (JSON.parse(k.fgMissed) as number[]).join(", "),
+            patMade: k.patMade,
+            patFailed: k.patFailed,
+            longest: k.longest,
+            gameWinner: k.gameWinner,
+          })),
+        }}
       />
     </div>
   );

@@ -62,3 +62,27 @@ export function defaultPositionMix(teamCount: number) {
     ...(flex > 0 ? [{ pos: "FLEX", count: flex }] : []),
   ];
 }
+
+// Combines repeated positions (e.g. two "SUPER FLEX" entries) into one count each.
+export function aggregateMix(mix: { pos: string; count: number }[]) {
+  const out: { pos: string; count: number }[] = [];
+  for (const g of mix) {
+    const found = out.find((o) => o.pos === g.pos);
+    if (found) found.count += g.count;
+    else out.push({ pos: g.pos, count: g.count });
+  }
+  return out;
+}
+
+export function slugify(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+// "42, 51 38" -> [42, 51, 38]; returns null if anything isn't a yardage.
+export function parseYards(text: unknown): number[] | null {
+  if (typeof text !== "string" || !text.trim()) return [];
+  const parts = text.split(/[,\s]+/).filter(Boolean);
+  const nums = parts.map(Number);
+  if (nums.some((n) => !Number.isFinite(n) || n < 1 || n > 99)) return null;
+  return nums.map((n) => Math.round(n));
+}
