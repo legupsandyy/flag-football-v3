@@ -6,6 +6,19 @@ import AdminPanel from "@/components/admin/AdminPanel";
 
 export const dynamic = "force-dynamic";
 
+async function load() {
+  // One after another (not all at once) so the database only ever sees one request at a time.
+  const slates = await prisma.slate.findMany({
+    orderBy: { order: "asc" },
+    include: { games: { orderBy: { kickoff: "asc" } } },
+  });
+  const users = await prisma.user.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } });
+  const playoffTeams = await getSetting("playoffTeams");
+  const superBowlWinner = await getSetting("superBowlWinner");
+  const dkSlates = await prisma.dkSlate.findMany({ orderBy: { createdAt: "asc" }, include: { scores: true } });
+  return { slates, users, playoffTeams, superBowlWinner, dkSlates };
+}
+
 export default async function AdminPage() {
   const header = (
     <>
@@ -24,13 +37,23 @@ export default async function AdminPage() {
     );
   }
 
-  const [slates, users, playoffTeams, superBowlWinner, dkSlates] = await Promise.all([
-    prisma.slate.findMany({ orderBy: { order: "asc" }, include: { games: { orderBy: { kickoff: "asc" } } } }),
-    prisma.user.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
-    getSetting("playoffTeams"),
-    getSetting("superBowlWinner"),
-    prisma.dkSlate.findMany({ orderBy: { createdAt: "asc" }, include: { scores: true } }),
-  ]);
+  let loaded;
+  try {
+    loaded = await load();
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return (
+      <div className="px-5 py-8 max-w-2xl mx-auto">
+        {header}
+        <div className="border border-amber/50 bg-amber/5 px-3 py-3 text-sm font-mono text-amber whitespace-pre-wrap break-words">
+          Couldn&apos;t load the admin data. Refresh the page. If it keeps happening, send this message to Claude:
+          {"\n\n"}
+          {msg.split("\n").filter(Boolean).slice(-4).join("\n").slice(0, 600)}
+        </div>
+      </div>
+    );
+  }
+  const { slates, users, playoffTeams, superBowlWinner, dkSlates } = loaded;
 
   return (
     <div className="px-5 py-8 max-w-2xl mx-auto">
