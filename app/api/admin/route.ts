@@ -21,6 +21,17 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   if (!body || typeof body.action !== "string") return bad("Bad request");
 
+  try {
+    return await handle(body);
+  } catch (e) {
+    // Show the real reason on screen instead of a blank failure.
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("admin action failed:", body.action, msg);
+    return bad("Server error: " + msg.split("\n").filter(Boolean).slice(-3).join(" ").slice(0, 300), 500);
+  }
+}
+
+async function handle(body: any) {
   switch (body.action) {
     case "saveGame": {
       const { id, slateId, awayTeam, homeTeam, kickoff, favorite } = body;
