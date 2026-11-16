@@ -15,6 +15,10 @@ model User {
   name          String         @unique
   createdAt     DateTime       @default(now())
   survivorPicks SurvivorPick[]
+  atsPicks      AtsPick[]
+  ouPicks       OuPick[]
+  salamiPicks   SalamiPick[]
+  superBowlPick SuperBowlPick?
 }
 
 model Team {
@@ -89,4 +93,80 @@ model SurvivorPick {
   kickTeamId String?
 
   @@unique([userId, slotId])
+}
+
+// ---------------------------------------------------------------------------
+// Pick'em contests (ATS, Over/Under, Grand Salami, Super Bowl winner)
+// ---------------------------------------------------------------------------
+
+// A group of games, e.g. "Wild Card". Also carries the Grand Salami line.
+model Slate {
+  id          String       @id // wc | div | conf | sb
+  label       String
+  order       Int
+  salamiLine  Float? // over/under on the combined score of every game in the slate
+  games       Game[]
+  salamiPicks SalamiPick[]
+}
+
+model Game {
+  id         String    @id @default(cuid())
+  slateId    String
+  slate      Slate     @relation(fields: [slateId], references: [id], onDelete: Cascade)
+  awayTeam   String
+  homeTeam   String
+  kickoff    DateTime
+  homeSpread Float // negative = home team is favored (e.g. -3.5)
+  total      Float // over/under line
+  awayScore  Int?
+  homeScore  Int?
+  isFinal    Boolean   @default(false)
+  atsPicks   AtsPick[]
+  ouPicks    OuPick[]
+}
+
+model AtsPick {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gameId String
+  game   Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  side   String // "away" | "home"
+
+  @@unique([userId, gameId])
+}
+
+model OuPick {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gameId String
+  game   Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  side   String // "over" | "under"
+
+  @@unique([userId, gameId])
+}
+
+model SalamiPick {
+  id      String @id @default(cuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slateId String
+  slate   Slate  @relation(fields: [slateId], references: [id], onDelete: Cascade)
+  side    String // "over" | "under"
+
+  @@unique([userId, slateId])
+}
+
+model SuperBowlPick {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team   String
+}
+
+// Simple key/value settings: "playoffTeams" (one team per line), "superBowlWinner".
+model Setting {
+  key   String @id
+  value String
 }

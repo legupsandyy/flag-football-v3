@@ -1,0 +1,18 @@
+import { prisma } from "./db";
+
+export async function getSetting(key: string): Promise<string> {
+  const row = await prisma.setting.findUnique({ where: { key } });
+  return row?.value ?? "";
+}
+
+export async function setSetting(key: string, value: string) {
+  await prisma.setting.upsert({ where: { key }, update: { value }, create: { key, value } });
+}
+
+export async function getPlayoffTeams(): Promise<string[]> {
+  const raw = await getSetting("playoffTeams");
+  return raw
+    .split("\n")
+    .map((t) => t.trim())
+    .filter(Boolean);
+}

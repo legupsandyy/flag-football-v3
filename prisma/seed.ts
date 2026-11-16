@@ -197,6 +197,21 @@ async function main() {
     }
   }
 
+  // Pick'em slates (the groups of games). Existing salami lines are never overwritten.
+  const SLATES = [
+    { id: "wc", label: "Wild Card", order: 1 },
+    { id: "div", label: "Divisional", order: 2 },
+    { id: "conf", label: "Conference Championships", order: 3 },
+    { id: "sb", label: "Super Bowl", order: 4 },
+  ];
+  for (const s of SLATES) {
+    await prisma.slate.upsert({
+      where: { id: s.id },
+      update: { label: s.label, order: s.order },
+      create: s,
+    });
+  }
+
   for (const name of USERS) {
     await prisma.user.upsert({ where: { name }, update: {}, create: { name } });
   }
