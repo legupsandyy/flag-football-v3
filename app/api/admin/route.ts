@@ -199,7 +199,7 @@ async function handle(body: any) {
     }
 
     case "addPlayers": {
-      const text = typeof body.text === "string" ? body.text : "";
+      const text: string = typeof body.text === "string" ? body.text : "";
       const teams = await prisma.team.findMany();
       const problems: string[] = [];
       const ops = [];
@@ -207,7 +207,7 @@ async function handle(body: any) {
       for (const raw of text.split("\n")) {
         const line = raw.trim();
         if (!line) continue;
-        const parts = line.split(/[,\t]/).map((p) => p.trim());
+        const parts = line.split(/[,\t]/).map((p: string) => p.trim());
         if (parts.length < 3) {
           problems.push(`"${line}" — use: Name, Position, Team`);
           continue;
