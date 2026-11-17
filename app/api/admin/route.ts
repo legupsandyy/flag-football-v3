@@ -94,6 +94,13 @@ async function handle(body: any) {
       return NextResponse.json({ ok: true });
     }
 
+    case "saveRules": {
+      if (!["ats", "ou", "survivor", "dk"].includes(body.kind)) return bad("Unknown contest.");
+      const text = typeof body.text === "string" ? body.text.trim() : "";
+      await setSetting(`rules_${body.kind}`, text); // empty = go back to the original rules
+      return NextResponse.json({ ok: true });
+    }
+
     case "saveDkSlate": {
       const label = typeof body.label === "string" ? body.label.trim() : "";
       if (!label) return bad("Enter a name for the slate.");

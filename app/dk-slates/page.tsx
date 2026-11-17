@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import RankBadge from "@/components/RankBadge";
 import { loadSurvivorScores } from "@/lib/survivorScores";
-import RulesBox from "@/components/RulesBox";
+import RulesBlock from "@/components/RulesBlock";
 
 export const dynamic = "force-dynamic";
 
@@ -42,19 +42,7 @@ export default async function DkSlatesPage() {
         Real DraftKings contest scores, entered by the commissioner after each slate. Totals add up across slates.
       </p>
 
-      <RulesBox>
-        <ul>
-          <li>
-            Lobbies are set up in <strong>DraftKings</strong> for each slate, following the lobby chart. Normal in-season roster and salary rules apply.
-          </li>
-          <li>
-            The person with the <strong>largest cumulative total points</strong> (not including Survivor) wins.
-          </li>
-          <li>
-            <strong>Tiebreaker:</strong> ties go to the person with the higher Survivor score.
-          </li>
-        </ul>
-      </RulesBox>
+      <RulesBlock kind="dk" />
 
       {slates.length === 0 ? (
         <div className="border border-grid bg-panel px-4 py-8 text-center text-sm text-black/50">

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import GameForm, { AdminGame } from "./GameForm";
 import DkSection, { DkSlateAdmin } from "./DkSection";
+import { RULE_LABELS, DEFAULT_RULES, RuleKind } from "@/lib/rules";
 import SurvivorAdmin, { RoundAdmin, PlayerAdmin, KickerAdmin } from "./SurvivorAdmin";
 
 type AdminSlate = { id: string; label: string; salamiLine: number | null; games: AdminGame[] };
@@ -21,6 +22,40 @@ async function call(body: Record<string, unknown>) {
   });
   const data = await res.json().catch(() => ({}));
   return { ok: res.ok, error: data.error as string | undefined };
+}
+
+function RulesEditor({ kind, text }: { kind: RuleKind; text: string }) {
+  const router = useRouter();
+  const [value, setValue] = useState(text);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function save(next: string) {
+    const r = await call({ action: "saveRules", kind, text: next });
+    setMsg(r.ok ? "Saved." : r.error ?? "Couldn't save.");
+    if (r.ok) router.refresh();
+  }
+
+  return (
+    <div className="border border-grid bg-panel p-3 space-y-2">
+      <div className="font-display text-sm">{RULE_LABELS[kind]}</div>
+      <textarea className={input} rows={8} value={value} onChange={(e) => setValue(e.target.value)} />
+      <div className="flex items-center gap-3">
+        <button onClick={() => save(value)} className={btn}>
+          save
+        </button>
+        <button
+          onClick={() => {
+            setValue(DEFAULT_RULES[kind]);
+            save("");
+          }}
+          className="font-mono text-xs text-black/50 underline"
+        >
+          reset to original
+        </button>
+        {msg && <span className="font-mono text-xs text-turf">{msg}</span>}
+      </div>
+    </div>
+  );
 }
 
 function SettingsBox({ playoffTeams, superBowlWinner }: { playoffTeams: string; superBowlWinner: string }) {
@@ -113,6 +148,7 @@ function MemberRow({ member }: { member: Member }) {
 }
 
 export default function AdminPanel({
+  rules,
   slates,
   members,
   playoffTeams,
@@ -120,6 +156,7 @@ export default function AdminPanel({
   dkSlates,
   survivor,
 }: {
+  rules: Record<RuleKind, string>;
   survivor: { teamIds: string[]; rounds: RoundAdmin[]; players: PlayerAdmin[]; kickers: KickerAdmin[] };
   dkSlates: DkSlateAdmin[];
   slates: AdminSlate[];
@@ -134,6 +171,18 @@ export default function AdminPanel({
 
   return (
     <div className="space-y-10">
+      <section>
+        <h2 className="font-display text-base mb-1">Rules</h2>
+        <p className="mb-2 text-xs text-black/50">
+          One line = one bullet. Put **two stars** around words to make them bold. Save, and the contest page updates right away.
+        </p>
+        <div className="space-y-3">
+          {(["ats", "ou", "survivor", "dk"] as RuleKind[]).map((k) => (
+            <RulesEditor key={k} kind={k} text={rules[k]} />
+          ))}
+        </div>
+      </section>
+
       <section>
         <h2 className="font-display text-base mb-2">Playoff teams &amp; champion</h2>
         <SettingsBox playoffTeams={playoffTeams} superBowlWinner={superBowlWinner} />

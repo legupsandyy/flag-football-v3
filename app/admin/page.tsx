@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { isAdmin } from "@/lib/admin";
 import { getSetting } from "@/lib/settings";
+import { getRules } from "@/lib/rules";
 import AdminLogin from "@/components/admin/AdminLogin";
 import AdminPanel from "@/components/admin/AdminPanel";
 
@@ -20,7 +21,13 @@ async function load() {
   const rounds = await prisma.round.findMany({ orderBy: { order: "asc" } });
   const players = await prisma.player.findMany({ orderBy: { name: "asc" } });
   const kickers = await prisma.kickerStat.findMany();
-  return { slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers };
+  const rules = {
+    ats: await getRules("ats"),
+    ou: await getRules("ou"),
+    survivor: await getRules("survivor"),
+    dk: await getRules("dk"),
+  };
+  return { rules, slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers };
 }
 
 export default async function AdminPage() {
@@ -57,7 +64,7 @@ export default async function AdminPage() {
       </div>
     );
   }
-  const { slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers } = loaded;
+  const { rules, slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers } = loaded;
 
   return (
     <div className="px-5 py-8 max-w-2xl mx-auto">
@@ -67,6 +74,7 @@ export default async function AdminPage() {
         and save — grading happens automatically.
       </p>
       <AdminPanel
+        rules={rules}
         slates={slates.map((s) => ({
           id: s.id,
           label: s.label,

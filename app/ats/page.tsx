@@ -4,7 +4,7 @@ import { loadPickem } from "@/lib/pickemData";
 import PickBoard from "@/components/PickBoard";
 import SuperBowlPick from "@/components/SuperBowlPick";
 import PickemLeaderboard from "@/components/PickemLeaderboard";
-import RulesBox from "@/components/RulesBox";
+import RulesBlock from "@/components/RulesBlock";
 
 export const dynamic = "force-dynamic";
 
@@ -21,20 +21,7 @@ export default async function AtsPage() {
         Pick every game against the spread. 1 point for a correct pick, 0 for a push. Picks lock at each game&apos;s kickoff.
       </p>
 
-      <RulesBox>
-        <ul>
-          <li>Spread pick&apos;em: pick who you believe will <strong>cover the spread</strong>.</li>
-          <li>You must submit your pick <strong>before the start of each game</strong>.</li>
-          <li>One correct pick is <strong>1 point</strong>. If your pick pushes, it counts as <strong>0 points</strong>.</li>
-          <li>
-            <strong>Super Bowl pick:</strong> before Wild Card weekend begins, choose who you think wins the Super Bowl. If your team wins, it adds
-            <strong> 4 points</strong> to your running total.
-          </li>
-          <li>
-            <strong>Tiebreaker:</strong> ties go to the person with the highest individual DK slate score.
-          </li>
-        </ul>
-      </RulesBox>
+      <RulesBlock kind="ats" />
 
       <SuperBowlPick
         teams={data.playoffTeams}

@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { loadPickem } from "@/lib/pickemData";
 import PickBoard from "@/components/PickBoard";
 import PickemLeaderboard from "@/components/PickemLeaderboard";
-import RulesBox from "@/components/RulesBox";
+import RulesBlock from "@/components/RulesBlock";
 
 export const dynamic = "force-dynamic";
 
@@ -20,25 +20,7 @@ export default async function OuPage() {
         Over or under on each game&apos;s total, plus a Grand Salami for each round (except the Super Bowl).
       </p>
 
-      <RulesBox>
-        <ul>
-          <li>
-            <strong>Game picks:</strong> for each game, choose whether more or fewer points will be scored than the listed total. You must submit your pick
-            <strong> before the start of each game</strong>.
-          </li>
-          <li>
-            One correct pick is <strong>1 point</strong>. If your pick pushes, it counts as <strong>0.5 points</strong>.
-          </li>
-          <li>
-            <strong>Grand Salami:</strong> the Grand Salami is the posted total of the combined scores of every team in every game that round. Pick Over or Under
-            on it. A correct Grand Salami pick earns <strong>3 points</strong> toward your O/U total. It is not played for the Super Bowl, since that is a
-            stand-alone game.
-          </li>
-          <li>
-            <strong>Tiebreaker:</strong> ties go to the person with the highest individual Survivor slate score.
-          </li>
-        </ul>
-      </RulesBox>
+      <RulesBlock kind="ou" />
 
       <h2 className="mb-2 font-display text-lg">Standings</h2>
       <div className="mb-10">

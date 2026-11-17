@@ -1,0 +1,48 @@
+import { getSetting } from "./settings";
+
+export type RuleKind = "ats" | "ou" | "survivor" | "dk";
+
+export const RULE_LABELS: Record<RuleKind, string> = {
+  ats: "ATS Pick'em",
+  ou: "O/U Pick'em",
+  survivor: "Survivor",
+  dk: "DK Slates",
+};
+
+// One line = one bullet. Put **double stars** around words to make them bold.
+export const DEFAULT_RULES: Record<RuleKind, string> = {
+  ats: [
+    "Spread pick'em: pick who you believe will **cover the spread**.",
+    "You must submit your pick **before the start of each game**.",
+    "One correct pick is **1 point**. If your pick pushes, it counts as **0 points**.",
+    "**Super Bowl pick:** before Wild Card weekend begins, choose who you think wins the Super Bowl. If your team wins, it adds **4 points** to your running total.",
+    "**Tiebreaker:** ties go to the person with the highest individual DK slate score.",
+  ].join("\n"),
+  ou: [
+    "**Game picks:** for each game, choose whether more or fewer points will be scored than the listed total. You must submit your pick **before the start of each game**.",
+    "One correct pick is **1 point**. If your pick pushes, it counts as **0.5 points**.",
+    "**Grand Salami:** the Grand Salami is the posted total of the combined scores of every team in every game that round. Pick Over or Under on it. A correct Grand Salami pick earns **3 points** toward your O/U total. It is not played for the Super Bowl, since that is a stand-alone game.",
+    "**Tiebreaker:** ties go to the person with the highest individual Survivor slate score.",
+  ].join("\n"),
+  survivor: [
+    "Fill each lineup with **one player from each team** in the playoff player pool. Roster size depends on how many teams are playing (8 teams = 8 players, 1 from each team). There are **no salaries or price limits**.",
+    "Seats: Wild Card (12 teams) 2 QB, 3 RB, 4 WR, 1 TE, 2 FLEX. Divisional (8 teams) 1 QB, 2 RB, 3 WR, 1 TE, 1 FLEX. Conference (4 teams) 1 QB, 1 RB, 1 WR, 1 TE. Super Bowl (2 teams) 2 SUPER FLEX. Every round also has 1 kicker seat.",
+    "**Use each player once.** Once you use a player in a lineup, you can't use that player again for the rest of the playoffs.",
+    "Submit your entire lineup **before the start of the first game each weekend**. Scores are updated by the commissioner.",
+    "Each round is **weighted**: Wild Card x1.00, Divisional x1.33, Conference x2.33, Super Bowl x3.33. The person with the most points at the end wins.",
+    "**Position players** (QB, RB, WR, TE) use DraftKings DFS scoring.",
+    "**Kicker:** each round, pick one team you think will have the best kicking performance (field goals and PATs). There is no limit to how many times you can use a team.",
+    "Kicker scoring: made FG 1-49 yards = 0.07 per yard + 1. Made FG 50+ yards = 0.11 per yard. Missed FG = (100 - yards) x -0.025. Made PAT +1. Failed PAT -2. Longest FG +3. Game-winning FG +2.",
+  ].join("\n"),
+  dk: [
+    "Lobbies are set up in **DraftKings** for each slate. Normal in-season roster and salary rules apply.",
+    "The person with the **largest cumulative total points** (not including Survivor) wins.",
+    "**Tiebreaker:** ties go to the person with the higher Survivor score.",
+  ].join("\n"),
+};
+
+// Saved text from the admin page, or the original rules if nothing is saved.
+export async function getRules(kind: RuleKind): Promise<string> {
+  const saved = await getSetting(`rules_${kind}`);
+  return saved.trim() ? saved : DEFAULT_RULES[kind];
+}
