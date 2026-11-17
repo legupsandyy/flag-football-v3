@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, ReactNode } from "react";
 import { NFL_TEAMS } from "@/lib/nflTeams";
-import { aggregateMix, defaultPositionMix, kickerPoints, round2 } from "@/lib/scoring";
+import { mixForRound, kickerPoints, round2 } from "@/lib/scoring";
 
 export type RoundAdmin = { id: string; label: string; lockTime: string; multiplier: number; teamIds: string[] };
 export type PlayerAdmin = { id: string; name: string; pos: string; teamId: string; dkPoints: number };
@@ -112,7 +112,7 @@ function RoundCard({ round, allTeamIds }: { round: RoundAdmin; allTeamIds: strin
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
 
   const toggle = (id: string) => setSel((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
-  const seats = [...aggregateMix(defaultPositionMix(sel.length)).map((g) => `${g.pos} ${g.count}`), "KICK 1"].join(" · ");
+  const seats = [...mixForRound(round.id, sel.length).map((g) => `${g.pos} ${g.count}`), "KICK 1"].join(" · ");
 
   async function save() {
     setMsg(null);

@@ -63,6 +63,39 @@ export function defaultPositionMix(teamCount: number) {
   ];
 }
 
+// The standard seats for each round (matches the league sheet). Roster size = number of
+// teams playing, plus one kicker seat added separately.
+const STANDARD_MIX: Record<string, { pos: string; count: number }[]> = {
+  wc: [
+    { pos: "QB", count: 2 },
+    { pos: "RB", count: 3 },
+    { pos: "WR", count: 4 },
+    { pos: "TE", count: 1 },
+    { pos: "FLEX", count: 2 },
+  ],
+  div: [
+    { pos: "QB", count: 1 },
+    { pos: "RB", count: 2 },
+    { pos: "WR", count: 3 },
+    { pos: "TE", count: 1 },
+    { pos: "FLEX", count: 1 },
+  ],
+  conf: [
+    { pos: "QB", count: 1 },
+    { pos: "RB", count: 1 },
+    { pos: "WR", count: 1 },
+    { pos: "TE", count: 1 },
+  ],
+  sb: [{ pos: "SUPER FLEX", count: 2 }],
+};
+
+// Seats for a round: the standard layout for the four playoff rounds, never changed by
+// which teams are ticked. Any other round falls back to a split based on team count.
+export function mixForRound(roundId: string, teamCount: number) {
+  const std = STANDARD_MIX[roundId];
+  return std ? std.map((g) => ({ ...g })) : aggregateMix(defaultPositionMix(teamCount));
+}
+
 // Combines repeated positions (e.g. two "SUPER FLEX" entries) into one count each.
 export function aggregateMix(mix: { pos: string; count: number }[]) {
   const out: { pos: string; count: number }[] = [];

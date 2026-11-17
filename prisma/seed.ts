@@ -52,7 +52,7 @@ async function main() {
   // Seats that already exist, and the picks in them, are left alone.
   const rounds = await prisma.round.findMany();
   for (const r of rounds) {
-    if ((JSON.parse(r.teamIds) as string[]).length > 0) await syncRoundSlots(r.id, prisma);
+    await syncRoundSlots(r.id, prisma);
   }
 
   for (const s of SLATES) {
