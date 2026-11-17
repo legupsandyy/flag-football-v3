@@ -57,7 +57,14 @@ export async function GET(req: NextRequest) {
       locked,
       teamIds,
     },
-    slots: round.slots.map((s) => ({
+    slots: [...round.slots]
+      .sort((a, b) => {
+        const order = ["QB", "RB", "WR", "TE", "FLEX", "SUPER FLEX", "KICK"];
+        const pa = order.indexOf(a.position);
+        const pb = order.indexOf(b.position);
+        return (pa === -1 ? 99 : pa) - (pb === -1 ? 99 : pb) || a.index - b.index;
+      })
+      .map((s) => ({
       id: s.id,
       position: s.position,
       index: s.index,
