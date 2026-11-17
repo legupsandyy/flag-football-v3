@@ -210,7 +210,7 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
                       <>
                         <div className="truncate text-[15px] font-semibold">{s.pick.player.name}</div>
                         <div className="mt-0.5 text-xs">
-                          <TeamChip name={s.pick.player.teamName} color={teamInfo?.color} />
+                          <TeamChip name={teamInfo?.name ?? s.pick.player.teamName ?? s.pick.player.teamId.toUpperCase()} color={teamInfo?.color} />
                         </div>
                       </>
                     ) : (
