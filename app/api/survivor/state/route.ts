@@ -19,6 +19,7 @@ export async function GET(req: NextRequest) {
   if (!round) return NextResponse.json({ error: "Round not found" }, { status: 404 });
 
   const teamIds: string[] = JSON.parse(round.teamIds);
+  const teamRows = await prisma.team.findMany({ where: { id: { in: teamIds } } });
   const players = await prisma.player.findMany({ where: { teamId: { in: teamIds } }, include: { team: true } });
 
   // Players this user already used in OTHER rounds are off-limits (no reuse rule).
@@ -72,9 +73,10 @@ export async function GET(req: NextRequest) {
         ? { player: s.picks[0].player, kickTeamId: s.picks[0].kickTeamId }
         : null,
     })),
+    teams: Object.fromEntries(teamRows.map((t) => [t.id, { name: t.name, color: t.color }])),
     players: players
       .filter((p) => !usedPlayerIds.has(p.id))
-      .map((p) => ({ id: p.id, name: p.name, pos: p.pos, teamId: p.teamId, teamName: p.team.name, dkPoints: p.dkPoints })),
+      .map((p) => ({ id: p.id, name: p.name, pos: p.pos, teamId: p.teamId, teamName: p.team.name, teamColor: p.team.color, dkPoints: p.dkPoints })),
     kickerScores,
   });
 }

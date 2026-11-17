@@ -11,6 +11,7 @@ interface Player {
   pos: string;
   teamId: string;
   teamName: string;
+  teamColor?: string;
   dkPoints: number;
 }
 interface Slot {
@@ -24,6 +25,7 @@ interface StateResponse {
   slots: Slot[];
   players: Player[];
   kickerScores: Record<string, number>;
+  teams?: Record<string, { name: string; color: string }>;
 }
 
 const CHIP: Record<string, string> = {
@@ -35,6 +37,23 @@ const CHIP: Record<string, string> = {
   "SUPER FLEX": "border-ink2/30 text-ink2/70",
   KICK: "border-amber/50 text-amber",
 };
+
+// Text colour (white or near-black) that reads well on a team colour.
+function textOn(hex: string) {
+  const h = hex.replace("#", "");
+  const n = parseInt(h.length === 3 ? h.split("").map((c) => c + c).join("") : h, 16);
+  const lum = (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+  return lum > 0.65 ? "#1a1a1a" : "#ffffff";
+}
+
+function TeamChip({ name, color }: { name: string; color?: string }) {
+  if (!color) return <span>{name}</span>;
+  return (
+    <span className="rounded-sm px-1.5 py-0.5 text-[11px] font-semibold" style={{ backgroundColor: color, color: textOn(color) }}>
+      {name}
+    </span>
+  );
+}
 
 export default function RosterBuilder({ roundId }: { roundId: string }) {
   const [state, setState] = useState<StateResponse | null>(null);
@@ -250,9 +269,10 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
                   <button
                     key={tid}
                     onClick={() => submitPick({ slotId: pickerSlot.id, kickTeamId: tid })}
+                    style={{ borderLeft: `6px solid ${state.teams?.[tid]?.color ?? "transparent"}` }}
                     className="row-line flex min-h-[52px] w-full items-center justify-between px-4 py-2 text-left last:border-b-0 hover:bg-black/[0.03] active:bg-turf/5"
                   >
-                    <span className="text-[15px] font-medium">{tid.toUpperCase()}</span>
+                    <TeamChip name={state.teams?.[tid]?.name ?? tid.toUpperCase()} color={state.teams?.[tid]?.color} />
                     <span className="font-mono text-xs text-amber">
                       {(kickerScores[tid] ?? 0) > 0 ? (kickerScores[tid] ?? 0).toFixed(2) : ""}
                     </span>
@@ -265,12 +285,14 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
                   <button
                     key={p.id}
                     onClick={() => submitPick({ slotId: pickerSlot.id, playerId: p.id })}
+                    style={{ borderLeft: `6px solid ${p.teamColor ?? "transparent"}` }}
                     className="row-line flex min-h-[52px] w-full items-center justify-between px-4 py-2 text-left last:border-b-0 hover:bg-black/[0.03] active:bg-turf/5"
                   >
                     <div className="min-w-0">
                       <div className="truncate text-[15px] font-medium">{p.name}</div>
-                      <div className="text-xs text-black/40">
-                        {p.pos} · {p.teamName}
+                      <div className="mt-0.5 flex items-center gap-1.5 text-xs text-black/50">
+                        <span>{p.pos}</span>
+                        <TeamChip name={p.teamName} color={p.teamColor} />
                       </div>
                     </div>
                     {p.dkPoints > 0 && <span className="font-mono text-xs text-amber">{p.dkPoints.toFixed(2)}</span>}
