@@ -124,6 +124,12 @@ function SalamiBox({ slate }: { slate: AdminSlate }) {
 function MemberRow({ member }: { member: Member }) {
   const router = useRouter();
   const [confirm, setConfirm] = useState(false);
+  const [pinMsg, setPinMsg] = useState<string | null>(null);
+
+  async function resetPin() {
+    const r = await call({ action: "resetPin", id: member.id });
+    setPinMsg(r.ok ? "PIN cleared" : r.error ?? "Couldn't reset");
+  }
 
   async function remove() {
     if (!confirm) {
@@ -137,12 +143,21 @@ function MemberRow({ member }: { member: Member }) {
   return (
     <div className="flex items-center justify-between row-line last:border-b-0 px-3 py-2 text-sm">
       <span>{member.name}</span>
+      <div className="flex items-center gap-2">
+      {pinMsg && <span className="font-mono text-xs text-turf">{pinMsg}</span>}
+      <button
+        onClick={resetPin}
+        className="border border-grid px-2 py-1 text-xs font-mono text-black/50 hover:border-turf hover:text-turf transition-colors"
+      >
+        reset PIN
+      </button>
       <button
         onClick={remove}
         className="border border-grid px-2 py-1 text-xs font-mono text-black/50 hover:border-amber hover:text-amber transition-colors"
       >
         {confirm ? "tap again to remove" : "remove"}
       </button>
+      </div>
     </div>
   );
 }

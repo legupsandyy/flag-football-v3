@@ -7,6 +7,7 @@ export default function JoinForm() {
   const router = useRouter();
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
+  const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -17,7 +18,7 @@ export default function JoinForm() {
     const res = await fetch("/api/auth/join", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, name }),
+      body: JSON.stringify({ code, name, pin }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -60,6 +61,24 @@ export default function JoinForm() {
           autoComplete="off"
           required
         />
+      </div>
+      <div>
+        <label className="block font-mono text-[11px] uppercase tracking-wide text-black/50 mb-1">
+          your 4-digit PIN
+        </label>
+        <input
+          type="password"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          value={pin}
+          onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+          className={input}
+          autoComplete="off"
+          required
+        />
+        <p className="mt-1 text-xs text-black/50">
+          New here? Pick any 4 numbers. Use the same name and PIN to sign in on other devices.
+        </p>
       </div>
       {error && (
         <div className="border border-turf/40 bg-turf/5 px-3 py-2 text-sm text-turf font-mono">{error}</div>

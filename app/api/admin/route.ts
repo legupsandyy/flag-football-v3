@@ -299,6 +299,12 @@ async function handle(body: any) {
       return NextResponse.json({ ok: true });
     }
 
+    case "resetPin": {
+      if (!body.id) return bad("Missing member");
+      await prisma.user.update({ where: { id: body.id }, data: { pinHash: null } });
+      return NextResponse.json({ ok: true });
+    }
+
     case "deleteUser": {
       if (!body.id) return bad("Missing member");
       // Survivor picks don't auto-delete with the user, so clear them first.
