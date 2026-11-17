@@ -179,11 +179,14 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
             {slots.map((s) => {
               const pts =
                 s.position === "KICK" ? kickerScores[s.pick?.kickTeamId ?? ""] ?? 0 : s.pick?.player?.dkPoints ?? 0;
+              const pickedTeam = s.position === "KICK" ? s.pick?.kickTeamId : s.pick?.player?.teamId;
+              const teamInfo = pickedTeam ? state.teams?.[pickedTeam] : undefined;
               return (
                 <button
                   key={s.id}
                   disabled={round.locked || saving}
                   onClick={() => openPicker(s)}
+                  style={{ borderLeft: `6px solid ${teamInfo?.color ?? "transparent"}` }}
                   className="row-line flex min-h-[56px] w-full items-center gap-3 px-3 py-2 text-left transition-colors last:border-b-0 hover:bg-black/[0.03] active:bg-turf/5 disabled:cursor-default disabled:hover:bg-transparent"
                 >
                   <span
@@ -197,14 +200,18 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
                   <div className="min-w-0 flex-1">
                     {s.position === "KICK" ? (
                       s.pick?.kickTeamId ? (
-                        <div className="text-[15px] font-semibold">{s.pick.kickTeamId.toUpperCase()} kicker</div>
+                        <div className="flex items-center gap-1.5 text-[15px] font-semibold">
+                          <TeamChip name={teamInfo?.name ?? s.pick.kickTeamId.toUpperCase()} color={teamInfo?.color} /> kicker
+                        </div>
                       ) : (
                         <PlaceholderText locked={round.locked} text="pick a kicker's team" />
                       )
                     ) : s.pick?.player ? (
                       <>
                         <div className="truncate text-[15px] font-semibold">{s.pick.player.name}</div>
-                        <div className="text-xs text-black/40">{s.pick.player.teamName}</div>
+                        <div className="mt-0.5 text-xs">
+                          <TeamChip name={s.pick.player.teamName} color={teamInfo?.color} />
+                        </div>
                       </>
                     ) : (
                       <PlaceholderText locked={round.locked} text="pick a player" />
