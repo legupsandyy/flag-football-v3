@@ -13,7 +13,7 @@ export default async function AtsPage() {
   const data = await loadPickem("ats", me.id);
 
   return (
-    <div className="px-5 py-8 max-w-2xl mx-auto">
+    <div className="px-4 py-8 max-w-3xl mx-auto">
       <div className="font-mono text-xs text-black/40 mb-1">postseason / ats</div>
       <h1 className="font-display text-2xl mb-1">ATS Pick&apos;em</h1>
       <p className="text-black/50 text-sm mb-6">
@@ -27,7 +27,7 @@ export default async function AtsPage() {
         winner={data.sbWinner}
       />
 
-      <h2 className="font-display text-base mb-2">Standings</h2>
+      <h2 className="mb-2 font-display text-lg">Standings</h2>
       <div className="mb-10">
         <PickemLeaderboard rows={data.rows} meId={me.id} extraLabel="SB pick" />
       </div>

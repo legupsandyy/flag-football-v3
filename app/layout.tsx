@@ -1,42 +1,28 @@
 import "./globals.css";
-import type { Metadata } from "next";
-import Link from "next/link";
+import type { Metadata, Viewport } from "next";
 import { getCurrentUser } from "@/lib/auth";
+import SiteNav from "@/components/SiteNav";
+import { SITE_NAME, SITE_SHORT } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Postseason Tournament",
+  title: SITE_NAME,
   description: "ATS, O/U, Survivor & DK Slates — one league, one roof.",
 };
 
-const NAV = [
-  { href: "/survivor", label: "Survivor" },
-  { href: "/ats", label: "ATS Pick'em" },
-  { href: "/ou", label: "O/U Pick'em" },
-  { href: "/dk-slates", label: "DK Slates" },
-];
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0F6B5C",
+};
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
 
   return (
     <html lang="en">
-      <body className="min-h-screen bg-ink text-ink2 font-sans">
-        <header className="row-line px-5 py-3 flex items-center justify-between bg-panel">
-          <Link href="/" className="font-display text-sm font-mono tracking-wide">
-            postseason/
-          </Link>
-          <nav className="flex gap-4 text-xs uppercase tracking-wide text-black/50 font-mono">
-            {NAV.map((n) => (
-              <Link key={n.href} href={n.href} className="hover:text-turf transition-colors">
-                {n.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="text-xs text-black/40 font-mono">
-            {user ? user.name : <Link href="/login" className="text-turf">join</Link>}
-          </div>
-        </header>
-        <main>{children}</main>
+      <body className="min-h-screen bg-ink font-sans text-ink2 antialiased">
+        <SiteNav siteName={SITE_NAME} shortName={SITE_SHORT} userName={user?.name ?? null} />
+        <main className="page-pad">{children}</main>
       </body>
     </html>
   );

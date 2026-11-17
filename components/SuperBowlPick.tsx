@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Trophy } from "lucide-react";
 
 export default function SuperBowlPick({
   teams,
@@ -35,10 +36,12 @@ export default function SuperBowlPick({
   }
 
   return (
-    <div className="border border-amber/40 bg-amber/5 p-3 mb-8">
+    <div className="mb-8 border border-amber/40 bg-amber/5 p-3">
       <div className="flex items-center justify-between">
-        <div className="font-display text-sm">Super Bowl winner</div>
-        <div className="font-mono text-[11px] text-black/50">4 pts · locks at first Wild Card kickoff</div>
+        <div className="flex items-center gap-1.5 font-display text-sm">
+          <Trophy size={15} className="text-amber" /> Super Bowl winner
+        </div>
+        <div className="font-mono text-[11px] text-black/50">4 pts</div>
       </div>
 
       {teams.length === 0 ? (
@@ -49,7 +52,7 @@ export default function SuperBowlPick({
             value={team}
             disabled={locked}
             onChange={(e) => choose(e.target.value)}
-            className="mt-2 w-full border border-grid bg-panel px-3 py-2 text-sm font-mono outline-none focus:border-turf disabled:opacity-70"
+            className="mt-2 min-h-[44px] w-full border border-grid bg-panel px-3 py-2 text-base font-mono outline-none focus:border-turf disabled:opacity-70"
           >
             <option value="" disabled>
               Choose a team…
@@ -60,7 +63,9 @@ export default function SuperBowlPick({
               </option>
             ))}
           </select>
-          {locked && <div className="mt-1 font-mono text-[11px] text-black/40">locked</div>}
+          <div className="mt-1 font-mono text-[11px] text-black/40">
+            {locked ? "locked" : "locks at the first Wild Card kickoff"}
+          </div>
           {winner && (
             <div className="mt-1 font-mono text-xs">
               Champion: {winner} {team && (team === winner ? "— you got it, +4" : "— not your pick")}

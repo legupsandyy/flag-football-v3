@@ -48,5 +48,5 @@ export async function GET() {
 
   table.sort((a, b) => b.total - a.total);
 
-  return NextResponse.json({ rounds: rounds.map((r) => ({ id: r.id, label: r.label })), table });
+  return NextResponse.json({ rounds: rounds.map((r) => ({ id: r.id, label: r.label })), table, meId: me.id });
 }

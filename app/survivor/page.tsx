@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { Lock, ChevronRight } from "lucide-react";
 import { prisma } from "@/lib/db";
 import Leaderboard from "@/components/Leaderboard";
+import LocalTime from "@/components/LocalTime";
 import { getCurrentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -10,26 +12,47 @@ export default async function SurvivorHub() {
   const me = await getCurrentUser();
   if (!me) redirect("/login");
   const rounds = await prisma.round.findMany({ orderBy: { order: "asc" } });
+  const now = new Date();
 
   return (
-    <div className="px-5 py-8 max-w-2xl mx-auto">
-      <div className="font-mono text-xs text-black/40 mb-1">postseason / survivor</div>
-      <h1 className="font-display text-2xl mb-1">Survivor</h1>
-      <p className="text-black/50 text-sm mb-6">
-        One roster per round, drawn from the teams still playing. Points scale up each round.
+    <div className="mx-auto max-w-3xl px-4 py-8">
+      <div className="mb-1 font-mono text-xs text-black/40">survivor</div>
+      <h1 className="font-display text-3xl">Survivor</h1>
+      <p className="mb-6 mt-1 text-sm text-black/50">
+        One roster per round, drawn from the teams still playing. A player can only be used once, and points grow each round.
       </p>
 
-      <div className="flex mb-8 overflow-x-auto border border-grid">
-        {rounds.map((r) => (
-          <Link
-            key={r.id}
-            href={`/survivor/${r.id}`}
-            className="flex-1 min-w-[100px] px-3 py-2.5 text-center hover:bg-black/[0.03] transition-colors font-mono border-r border-grid last:border-r-0"
-          >
-            <div className="text-[11px] uppercase tracking-wide text-black/60">{r.label}</div>
-            <div className="text-xs text-amber mt-0.5">×{r.multiplier.toFixed(2)}</div>
-          </Link>
-        ))}
+      <div className="mb-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {rounds.map((r) => {
+          const ready = (JSON.parse(r.teamIds) as string[]).length > 0;
+          const locked = ready && now >= r.lockTime;
+          return (
+            <Link
+              key={r.id}
+              href={`/survivor/${r.id}`}
+              className="group flex flex-col justify-between border border-grid bg-panel p-3 transition-colors hover:border-turf/50"
+            >
+              <div className="flex items-start justify-between">
+                <div className="font-display text-base">{r.label}</div>
+                <span className="font-mono text-sm font-semibold text-amber">×{r.multiplier.toFixed(2)}</span>
+              </div>
+              <div className="mt-3 flex items-center justify-between font-mono text-[11px] text-black/50">
+                {!ready ? (
+                  <span>not set up yet</span>
+                ) : locked ? (
+                  <span className="flex items-center gap-1">
+                    <Lock size={11} /> locked
+                  </span>
+                ) : (
+                  <span className="text-turf">
+                    open · <LocalTime iso={r.lockTime.toISOString()} />
+                  </span>
+                )}
+                <ChevronRight size={14} className="shrink-0 text-black/20 group-hover:text-turf" />
+              </div>
+            </Link>
+          );
+        })}
       </div>
 
       <Leaderboard />

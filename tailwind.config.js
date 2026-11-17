@@ -13,6 +13,7 @@ module.exports = {
         amber: "#B5741F",
         grid: "#D8D8D4",
         ink2: "#1A1A1A",
+        brick: "#A23B2A",
       },
       fontFamily: {
         display: ["'IBM Plex Sans'", "sans-serif"],

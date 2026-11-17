@@ -30,7 +30,7 @@ export default function JoinForm() {
   }
 
   const input =
-    "w-full border border-grid bg-panel px-3 py-2 text-sm font-mono outline-none focus:border-turf";
+    "min-h-[44px] w-full border border-grid bg-panel px-3 py-2 text-base font-mono outline-none focus:border-turf";
 
   return (
     <form onSubmit={submit} className="space-y-4">
@@ -67,7 +67,7 @@ export default function JoinForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full border border-turf text-turf px-4 py-2 text-sm font-mono hover:bg-turf hover:text-white transition-colors disabled:opacity-50"
+        className="min-h-[44px] w-full border border-turf bg-turf px-4 py-2 text-sm font-mono text-white transition-colors hover:bg-turf/90 disabled:opacity-50"
       >
         {loading ? "joining…" : "join / sign in"}
       </button>
