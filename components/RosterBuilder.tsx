@@ -56,8 +56,15 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
   const eligiblePlayers = useMemo(() => {
     if (!state || !pickerSlot) return [];
     const taken = new Set(state.slots.map((s) => s.pick?.player?.id).filter(Boolean));
+    const usedTeams = new Set(
+      state.slots
+        .filter((s) => s.id !== pickerSlot.id)
+        .map((s) => s.pick?.player?.teamId)
+        .filter(Boolean)
+    );
     const q = query.trim().toLowerCase();
     return state.players.filter((p) => {
+      if (usedTeams.has(p.teamId)) return false;
       if (taken.has(p.id) && p.id !== pickerSlot.pick?.player?.id) return false;
       if (!(pickerSlot.position === "FLEX" || pickerSlot.position === "SUPER FLEX") && p.pos !== pickerSlot.position) {
         return false;

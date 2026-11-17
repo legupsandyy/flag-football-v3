@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import RankBadge from "@/components/RankBadge";
+import { loadSurvivorScores } from "@/lib/survivorScores";
+import RulesBox from "@/components/RulesBox";
 
 export const dynamic = "force-dynamic";
 
@@ -9,23 +11,25 @@ export default async function DkSlatesPage() {
   const me = await getCurrentUser();
   if (!me) redirect("/login");
 
+  const survivor = await loadSurvivorScores();
+  const svTotal = new Map<string, number>(survivor.table.map((r) => [r.userId, r.total] as [string, number]));
   const [slates, users] = await Promise.all([
     prisma.dkSlate.findMany({ orderBy: { createdAt: "asc" }, include: { scores: true } }),
     prisma.user.findMany({ select: { id: true, name: true } }),
   ]);
 
-  type Row = { id: string; name: string; per: (number | null)[]; total: number; rank: number };
+  type Row = { id: string; name: string; per: (number | null)[]; total: number; rank: number; tb: number };
 
   const ranked: Row[] = users.map((u) => {
     const per = slates.map((s) => s.scores.find((x) => x.userId === u.id)?.points ?? null);
     const total = per.reduce<number>((sum, v) => sum + (v ?? 0), 0);
-    return { id: u.id, name: u.name, per, total, rank: 0 };
+    return { id: u.id, name: u.name, per, total, rank: 0, tb: svTotal.get(u.id) ?? 0 };
   });
-  ranked.sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
+  ranked.sort((a, b) => b.total - a.total || b.tb - a.tb || a.name.localeCompare(b.name));
 
   // People tied on points share a rank number.
   for (let i = 0; i < ranked.length; i++) {
-    ranked[i].rank = i > 0 && ranked[i].total === ranked[i - 1].total ? ranked[i - 1].rank : i + 1;
+    ranked[i].rank = i > 0 && ranked[i].total === ranked[i - 1].total && ranked[i].tb === ranked[i - 1].tb ? ranked[i - 1].rank : i + 1;
   }
 
   const fmt = (n: number) => (Math.round(n * 100) / 100).toString();
@@ -37,6 +41,20 @@ export default async function DkSlatesPage() {
       <p className="mb-6 mt-1 text-sm text-black/50">
         Real DraftKings contest scores, entered by the commissioner after each slate. Totals add up across slates.
       </p>
+
+      <RulesBox>
+        <ul>
+          <li>
+            Lobbies are set up in <strong>DraftKings</strong> for each slate, following the lobby chart. Normal in-season roster and salary rules apply.
+          </li>
+          <li>
+            The person with the <strong>largest cumulative total points</strong> (not including Survivor) wins.
+          </li>
+          <li>
+            <strong>Tiebreaker:</strong> ties go to the person with the higher Survivor score.
+          </li>
+        </ul>
+      </RulesBox>
 
       {slates.length === 0 ? (
         <div className="border border-grid bg-panel px-4 py-8 text-center text-sm text-black/50">

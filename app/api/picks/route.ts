@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
       include: { games: { orderBy: { kickoff: "asc" }, take: 1 } },
     });
     if (!slate) return bad("Round not found", 404);
+    if (slate.id === "sb") return bad("There is no Grand Salami for the Super Bowl.", 403);
     if (slate.salamiLine === null) return bad("The Grand Salami line isn't set yet.", 403);
     const first = slate.games[0];
     if (!first) return bad("No games in this round yet.", 403);

@@ -1,5 +1,6 @@
 import { prisma } from "./db";
 import { getPlayoffTeams, getSetting } from "./settings";
+import { loadSurvivorScores } from "./survivorScores";
 import { gradeAts, gradeOu, gradeSalami, pointsFor, POINTS, Result } from "./pickem";
 
 // Shapes handed to the pages (kept plain/serializable so they can go to client components).
@@ -37,12 +38,13 @@ export type BoardRow = {
   wins: number;
   losses: number;
   pushes: number;
+  tb: number; // tiebreak value (ATS: best DK slate score, O/U: best Survivor round)
   extra: string; // e.g. Super Bowl pick (once visible)
 };
 
 export async function loadPickem(kind: "ats" | "ou", meId: string) {
   const now = new Date();
-  const [slates, users, sbPicks, playoffTeams, sbWinner] = await Promise.all([
+  const [slates, users, sbPicks, playoffTeams, sbWinner, dkScores] = await Promise.all([
     prisma.slate.findMany({
       orderBy: { order: "asc" },
       include: {
@@ -57,7 +59,13 @@ export async function loadPickem(kind: "ats" | "ou", meId: string) {
     prisma.superBowlPick.findMany(),
     getPlayoffTeams(),
     getSetting("superBowlWinner"),
+    kind === "ats" ? prisma.dkScore.findMany() : Promise.resolve([]),
   ]);
+  const survivorBest = new Map<string, number>();
+  if (kind === "ou") {
+    const sv = await loadSurvivorScores();
+    for (const r of sv.table) survivorBest.set(r.userId, r.best);
+  }
 
   const nameOf = new Map<string, string>(users.map((u: { id: string; name: string }) => [u.id, u.name] as [string, string]));
   const names = (ids: string[]) => ids.map((id) => nameOf.get(id) ?? "?").sort((a, b) => a.localeCompare(b));
@@ -68,7 +76,7 @@ export async function loadPickem(kind: "ats" | "ou", meId: string) {
   const sbLocked = firstWc ? now >= firstWc : false;
 
   const board = new Map<string, BoardRow>(
-    users.map((u) => [u.id, { userId: u.id, name: u.name, points: 0, wins: 0, losses: 0, pushes: 0, extra: "" }])
+    users.map((u) => [u.id, { userId: u.id, name: u.name, points: 0, wins: 0, losses: 0, pushes: 0, tb: 0, extra: "" }])
   );
   const bump = (userId: string, r: Result | null, k: "ats" | "ou" | "salami") => {
     const row = board.get(userId);
@@ -122,7 +130,7 @@ export async function loadPickem(kind: "ats" | "ou", meId: string) {
     let salamiPick: string | null = null;
     let salamiResult: Result | null = null;
     let salamiOthers: { label: string; names: string[] }[] = [];
-    if (kind === "ou") {
+    if (kind === "ou" && s.id !== "sb") {
       for (const p of s.salamiPicks) {
         bump(p.userId, gradeSalami(s.salamiLine, s.games, p.side), "salami");
       }
@@ -160,8 +168,12 @@ export async function loadPickem(kind: "ats" | "ou", meId: string) {
     }
   }
 
+  for (const row of board.values()) {
+    if (kind === "ou") row.tb = survivorBest.get(row.userId) ?? 0;
+    else row.tb = Math.max(0, ...dkScores.filter((d) => d.userId === row.userId).map((d) => d.points));
+  }
   const rows = Array.from(board.values()).sort(
-    (a, b) => b.points - a.points || a.name.localeCompare(b.name)
+    (a, b) => b.points - a.points || b.tb - a.tb || a.name.localeCompare(b.name)
   );
 
   return { slates: slateViews, rows, sbLocked, playoffTeams, sbWinner, mySbPick };

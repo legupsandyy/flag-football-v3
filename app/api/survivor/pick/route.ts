@@ -28,6 +28,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "You've already used this player in an earlier round" }, { status: 409 });
     }
 
+    // Enforce: one player per team within a round.
+    const chosen = await prisma.player.findUnique({ where: { id: playerId } });
+    if (!chosen) return NextResponse.json({ error: "Player not found" }, { status: 404 });
+    const sameTeam = await prisma.survivorPick.findFirst({
+      where: {
+        userId: user.id,
+        slotId: { not: slotId },
+        slot: { roundId: slot.roundId },
+        player: { teamId: chosen.teamId },
+      },
+    });
+    if (sameTeam) {
+      return NextResponse.json({ error: "You already have a player from that team this round" }, { status: 409 });
+    }
+
     // Enforce: no duplicate player within the same round's roster.
     const dupeInRound = await prisma.survivorPick.findFirst({
       where: { userId: user.id, playerId, slot: { roundId: slot.roundId }, slotId: { not: slotId } },

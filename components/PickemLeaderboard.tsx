@@ -14,12 +14,13 @@ export default function PickemLeaderboard({
     return <div className="border border-grid bg-panel px-4 py-3 text-sm text-black/40">No one has joined yet.</div>;
   }
   // Tied people share a rank number.
-  let lastPoints: number | null = null;
+  let lastKey: string | null = null;
   let lastRank = 0;
   const ranked = rows.map((r, i) => {
-    if (r.points !== lastPoints) {
+    const key = `${r.points}|${r.tb}`;
+    if (key !== lastKey) {
       lastRank = i + 1;
-      lastPoints = r.points;
+      lastKey = key;
     }
     return { ...r, rank: lastRank };
   });

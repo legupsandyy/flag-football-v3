@@ -1,9 +1,10 @@
-import { prisma } from "./db";
+import type { PrismaClient } from "@prisma/client";
+import { prisma as defaultPrisma } from "./db";
 import { aggregateMix, defaultPositionMix } from "./scoring";
 
 // Makes a round's roster seats match how many teams are playing in it.
 // Seats are rebuilt from the team count; seats that no longer exist lose their picks.
-export async function syncRoundSlots(roundId: string) {
+export async function syncRoundSlots(roundId: string, prisma: PrismaClient = defaultPrisma) {
   const round = await prisma.round.findUnique({ where: { id: roundId } });
   if (!round) return;
   const teamIds: string[] = JSON.parse(round.teamIds);

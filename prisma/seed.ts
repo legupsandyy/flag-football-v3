@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { syncRoundSlots } from "../lib/survivorAdmin";
 
 const prisma = new PrismaClient();
 
@@ -44,6 +45,14 @@ async function main() {
       update: {},
       create: { roundId: r.id, position: "KICK", index: 0 },
     });
+  }
+
+  // Keeps roster seats in step with the number of teams in each round. This also
+  // repairs older data (for example, the Super Bowl now gets 2 Super Flex seats + 1 kicker).
+  // Seats that already exist, and the picks in them, are left alone.
+  const rounds = await prisma.round.findMany();
+  for (const r of rounds) {
+    if ((JSON.parse(r.teamIds) as string[]).length > 0) await syncRoundSlots(r.id, prisma);
   }
 
   for (const s of SLATES) {

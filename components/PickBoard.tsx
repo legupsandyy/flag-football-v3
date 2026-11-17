@@ -153,7 +153,7 @@ export default function PickBoard({ kind, slates }: { kind: Kind; slates: SlateV
               </span>
             </div>
 
-            {kind === "ou" && s.salamiLine !== null && (
+            {kind === "ou" && s.id !== "sb" && s.salamiLine !== null && (
               <div className="mb-3 border border-amber/40 bg-amber/5 p-3">
                 <div className="mb-2.5 flex items-start justify-between gap-3">
                   <div>

@@ -143,7 +143,7 @@ export default function AdminPanel({
         <section key={s.id}>
           <h2 className="font-display text-base mb-2">{s.label}</h2>
           <div className="space-y-3">
-            <SalamiBox slate={s} />
+            {s.id !== "sb" && <SalamiBox slate={s} />}
             {s.games.map((g) => (
               <GameForm key={g.id + g.kickoff} slateId={s.id} game={g} />
             ))}
