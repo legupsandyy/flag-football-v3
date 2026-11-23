@@ -9,6 +9,6 @@ export default function RankBadge({ rank }: { rank: number }) {
       ? "bg-amber/25 text-amber"
       : "text-black/40";
   return (
-    <span className={`grid h-6 w-6 shrink-0 place-items-center font-mono text-xs font-semibold ${style}`}>{rank}</span>
+    <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full font-mono text-xs font-semibold ${style}`}>{rank}</span>
   );
 }

@@ -64,3 +64,53 @@ summary:focus-visible {
     padding-bottom: 0;
   }
 }
+
+/* ---- Sharper finish ---- */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.55;
+}
+h1.font-display {
+  letter-spacing: -0.02em;
+}
+a,
+button,
+summary {
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.2s ease,
+    opacity 0.15s ease;
+}
+button:not(:disabled),
+summary {
+  cursor: pointer;
+}
+/* Header: floats above the page with a soft shadow instead of a hard line. */
+header.sticky {
+  border-bottom-color: transparent;
+  box-shadow: 0 1px 0 rgba(20, 30, 25, 0.05), 0 6px 16px rgba(20, 30, 25, 0.05);
+}
+/* Cards that are links lift slightly on hover. */
+a.border.bg-panel:hover {
+  box-shadow: 0 2px 4px rgba(20, 30, 25, 0.05), 0 8px 24px rgba(20, 30, 25, 0.08);
+  transform: translateY(-1px);
+}
+a.border.bg-panel {
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.15s ease;
+}
+/* Form fields: consistent corners and a clear focus ring. */
+input,
+textarea,
+select {
+  border-radius: 8px;
+}
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #0f6b5c;
+  box-shadow: 0 0 0 3px rgba(15, 107, 92, 0.12);
+}
+/* Thin, quiet scrollbars. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cfcfc9 transparent;
+}

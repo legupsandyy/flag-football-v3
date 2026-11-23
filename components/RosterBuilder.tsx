@@ -245,7 +245,7 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
             })}
           </div>
 
-          <div className="sticky bottom-[calc(3.5rem+env(safe-area-inset-bottom)+0.5rem)] z-30 mt-4 flex items-center justify-between border border-turf/40 bg-[#eef5f3] px-4 py-3 shadow-sm sm:bottom-4">
+          <div className="sticky bottom-[calc(3.5rem+env(safe-area-inset-bottom)+0.5rem)] z-30 mt-4 flex items-center justify-between rounded-xl border border-turf/30 bg-[#eef5f3] px-5 py-3.5 shadow-md sm:bottom-4">
             <div>
               <div className="font-mono text-[10px] uppercase tracking-wide text-black/50">
                 raw {rawTotal.toFixed(2)} × {round.multiplier.toFixed(2)}
