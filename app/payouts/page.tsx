@@ -77,10 +77,6 @@ export default async function PayoutsPage() {
           );
         })}
       </div>
-
-      <p className="mt-6 text-xs text-black/40">
-        Ties split the prize for the places they share. Round winner prizes skip the Super Bowl round.
-      </p>
     </div>
   );
 }
