@@ -23,8 +23,7 @@ async function load() {
   const players = await prisma.player.findMany({ orderBy: { name: "asc" } });
   const kickers = await prisma.kickerStat.findMany();
   const rules = {
-    ats: await getRules("ats"),
-    ou: await getRules("ou"),
+    pickem: await getRules("pickem"),
     survivor: await getRules("survivor"),
     dk: await getRules("dk"),
   };

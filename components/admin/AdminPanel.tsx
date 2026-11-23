@@ -267,7 +267,7 @@ export default function AdminPanel({
           One line = one bullet. Put **two stars** around words to make them bold. Save, and the contest page updates right away.
         </p>
         <div className="space-y-3">
-          {(["ats", "ou", "survivor", "dk"] as RuleKind[]).map((k) => (
+          {(["pickem", "survivor", "dk"] as RuleKind[]).map((k) => (
             <RulesEditor key={k} kind={k} text={rules[k]} />
           ))}
         </div>

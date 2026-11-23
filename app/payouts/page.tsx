@@ -6,8 +6,8 @@ import { getPayouts, PAYOUT_KEYS, PAYOUT_LABELS, prizeName, money, PayoutKey } f
 
 export const dynamic = "force-dynamic";
 
-// Which column of the standings each contest uses (Survivor, ATS, O/U, DK).
-const RANK_INDEX: Partial<Record<PayoutKey, number>> = { survivor: 0, dk: 3 };
+// Which column of the standings each contest uses (Survivor, Pick'em, DK).
+const RANK_INDEX: Partial<Record<PayoutKey, number>> = { survivor: 0, pickem: 1, dk: 2 };
 
 export default async function PayoutsPage() {
   const me = await getCurrentUser();

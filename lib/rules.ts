@@ -1,28 +1,22 @@
 import { getSetting } from "./settings";
 
-export type RuleKind = "ats" | "ou" | "survivor" | "dk";
+export type RuleKind = "pickem" | "survivor" | "dk";
 
 export const RULE_LABELS: Record<RuleKind, string> = {
-  ats: "ATS Pick'em",
-  ou: "O/U Pick'em",
+  pickem: "Pick'em (ATS + O/U)",
   survivor: "Survivor",
   dk: "DK Slates",
 };
 
 // One line = one bullet. Put **double stars** around words to make them bold.
 export const DEFAULT_RULES: Record<RuleKind, string> = {
-  ats: [
-    "Spread pick'em: pick who you believe will **cover the spread**.",
-    "You must submit your pick **before the start of each game**.",
-    "One correct pick is **1 point**. If your pick pushes, it counts as **0 points**.",
+  pickem: [
+    "**Two picks on every game.** Pick who you think will **cover the spread** (ATS), and pick **Over or Under** on the listed total. You must submit your picks **before the start of each game**.",
+    "ATS: a correct pick is **1 point**. If your pick pushes, it counts as **0 points**.",
+    "Over/Under: a correct pick is **1 point**. If your pick pushes, it counts as **0.5 points**.",
+    "**Grand Salami:** the posted total of the combined scores of every team in every game that round. Pick Over or Under on it. A correct pick earns **3 points**. It is not played for the Super Bowl, since that is a stand-alone game.",
     "**Super Bowl pick:** before Wild Card weekend begins, choose who you think wins the Super Bowl. If your team wins, it adds **4 points** to your running total.",
     "**Tiebreaker:** ties go to the person with the highest individual DK slate score.",
-  ].join("\n"),
-  ou: [
-    "**Game picks:** for each game, choose whether more or fewer points will be scored than the listed total. You must submit your pick **before the start of each game**.",
-    "One correct pick is **1 point**. If your pick pushes, it counts as **0.5 points**.",
-    "**Grand Salami:** the Grand Salami is the posted total of the combined scores of every team in every game that round. Pick Over or Under on it. A correct Grand Salami pick earns **3 points** toward your O/U total. It is not played for the Super Bowl, since that is a stand-alone game.",
-    "**Tiebreaker:** ties go to the person with the highest individual Survivor slate score.",
   ].join("\n"),
   survivor: [
     "Fill each lineup with **one player from each team** in the playoff player pool. Roster size depends on how many teams are playing (8 teams = 8 players, 1 from each team). There are **no salaries or price limits**.",

@@ -13,7 +13,7 @@ export default async function StandingsPage() {
 
   const { rows } = await loadStandings(me.id);
 
-const heads = ["Survivor", "ATS", "O/U", "DK"];
+const heads = ["Survivor", "Pick'em", "DK"];
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">

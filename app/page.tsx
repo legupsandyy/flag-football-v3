@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Flame, Target, ArrowUpDown, Coins, Clock, ChevronRight } from "lucide-react";
+import { Flame, Target, Coins, Clock, ChevronRight } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getNextUp } from "@/lib/nextUp";
 import { loadStandings } from "@/lib/standingsData";
@@ -9,12 +9,11 @@ import Countdown from "@/components/Countdown";
 
 export const dynamic = "force-dynamic";
 
-// index = position in the standings ranks: Survivor, ATS, O/U, DK
+// idx = position in the standings ranks: Survivor, Pick'em, DK
 const CONTESTS = [
   { href: "/survivor", label: "Survivor", desc: "Build a roster each round.", icon: Flame, idx: 0 },
-  { href: "/ats", label: "ATS Pick'em", desc: "Every game against the spread.", icon: Target, idx: 1 },
-  { href: "/ou", label: "O/U Pick'em", desc: "Over or under, plus Grand Salami.", icon: ArrowUpDown, idx: 2 },
-  { href: "/dk-slates", label: "DK Slates", desc: "Real DraftKings scores.", icon: Coins, idx: 3 },
+  { href: "/pickem", label: "Pick'em", desc: "Spread and over/under on every game.", icon: Target, idx: 1 },
+  { href: "/dk-slates", label: "DK Slates", desc: "Real DraftKings scores.", icon: Coins, idx: 2 },
 ];
 
 function ordinal(n: number) {
@@ -65,7 +64,7 @@ export default async function HomePage() {
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         {CONTESTS.map((c) => {
           const Icon = c.icon;
           const rank = mine && mine.started[c.idx] ? mine.ranks[c.idx] : null;

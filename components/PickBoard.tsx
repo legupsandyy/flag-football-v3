@@ -16,7 +16,7 @@ const CHIP: Record<string, string> = {
   push: "bg-amber/15 text-amber",
 };
 
-function ResultChip({ result }: { result: string | null }) {
+export function ResultChip({ result }: { result: string | null }) {
   if (!result) return null;
   return (
     <span className={`px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wide ${CHIP[result]}`}>
@@ -25,7 +25,7 @@ function ResultChip({ result }: { result: string | null }) {
   );
 }
 
-function TeamName({ name, className = "" }: { name: string; className?: string }) {
+export function TeamName({ name, className = "" }: { name: string; className?: string }) {
   const t = findTeam(name);
   return (
     <span className={`inline-flex min-w-0 items-center gap-1.5 ${className}`}>
@@ -40,7 +40,10 @@ function TeamName({ name, className = "" }: { name: string; className?: string }
 }
 
 // "Chiefs covered by 3.5" / "Went over by 3" once a game is final.
-function finalLine(kind: Kind, g: GameView): string | null {
+export function finalLine(
+  kind: Kind,
+  g: Pick<GameView, "isFinal" | "awayScore" | "homeScore" | "homeSpread" | "home" | "away" | "total">
+): string | null {
   if (!g.isFinal || g.awayScore === null || g.homeScore === null) return null;
   if (kind === "ats") {
     const margin = g.homeScore + g.homeSpread - g.awayScore;
@@ -54,7 +57,7 @@ function finalLine(kind: Kind, g: GameView): string | null {
   return `Total ${total} · went ${total > g.total ? "over" : "under"} by ${diff}`;
 }
 
-function Others({ groups }: { groups: { label: string; names: string[] }[] }) {
+export function Others({ groups }: { groups: { label: string; names: string[] }[] }) {
   if (groups.length === 0) return null;
   return (
     <details className="mt-3 border-t border-grid pt-2 text-xs text-black/50">
@@ -73,7 +76,7 @@ function Others({ groups }: { groups: { label: string; names: string[] }[] }) {
 }
 
 // One big tappable option. After a game ends, the chosen option turns green / red / amber.
-function Option({
+export function Option({
   selected,
   locked,
   result,

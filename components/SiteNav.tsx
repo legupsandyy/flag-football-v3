@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Flame, Target, ArrowUpDown, Coins, Home, Trophy } from "lucide-react";
+import { Flame, Target, Coins, Home, Trophy } from "lucide-react";
 import Logo from "./Logo";
 
 const ITEMS = [
   { href: "/survivor", label: "Survivor", short: "Survivor", icon: Flame },
-  { href: "/ats", label: "ATS Pick'em", short: "ATS", icon: Target },
-  { href: "/ou", label: "O/U Pick'em", short: "O/U", icon: ArrowUpDown },
+  { href: "/pickem", label: "Pick'em", short: "Pick'em", icon: Target },
   { href: "/dk-slates", label: "DK Slates", short: "DK", icon: Coins },
   { href: "/standings", label: "Standings", short: "Ranks", icon: Trophy },
 ];
