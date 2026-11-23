@@ -4,6 +4,7 @@ import { ChevronLeft, Lock } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { kickerPoints, round2 } from "@/lib/scoring";
+import { loadSurvivorScores } from "@/lib/survivorScores";
 import RankBadge from "@/components/RankBadge";
 
 export const dynamic = "force-dynamic";
@@ -118,6 +119,68 @@ export default async function LineupsPage({ params }: { params: { roundId: strin
     return { ...l, rank: lastRank };
   });
 
+  // ---- Recap cards ----
+  type Card = { title: string; main: string; sub: string };
+  const cards: Card[] = [];
+  const anyScores = lineups.some((l) => l.total !== 0);
+  if (anyScores) {
+    const top = ranked[0];
+    cards.push({ title: "Round winner", main: top.name, sub: `${top.total.toFixed(2)} pts` });
+
+    // Player picks (not kickers), counted across all lineups.
+    const byPlayer = new Map<string, { name: string; team: string; pts: number; count: number }>();
+    for (const p of picks) {
+      if (!p.player) continue;
+      const cur = byPlayer.get(p.player.id) ?? { name: p.player.name, team: p.player.team.name, pts: p.player.dkPoints, count: 0 };
+      cur.count++;
+      byPlayer.set(p.player.id, cur);
+    }
+    const players = Array.from(byPlayer.values());
+    if (players.length) {
+      const best = [...players].sort((a, b) => b.pts - a.pts)[0];
+      cards.push({ title: "Best pick", main: best.name, sub: `${best.pts.toFixed(2)} pts · ${best.team} · in ${best.count} lineup${best.count === 1 ? "" : "s"}` });
+      const popular = [...players].sort((a, b) => b.count - a.count || b.pts - a.pts)[0];
+      cards.push({ title: "Most picked", main: popular.name, sub: `in ${popular.count} lineup${popular.count === 1 ? "" : "s"} · ${popular.pts.toFixed(2)} pts` });
+      const bust = [...players].filter((p) => p.count >= 2).sort((a, b) => a.pts - b.pts || b.count - a.count)[0];
+      if (bust) cards.push({ title: "Biggest bust", main: bust.name, sub: `${bust.pts.toFixed(2)} pts · picked by ${bust.count}` });
+    }
+
+    // Who climbed the most in the overall Survivor standings this round.
+    const sv = await loadSurvivorScores();
+    const idx = sv.rounds.findIndex((r) => r.id === round.id);
+    if (idx > 0) {
+      const rankAfter = (upTo: number) => {
+        const totals = sv.table.map((t) => ({
+          id: t.userId,
+          total: sv.rounds.slice(0, upTo + 1).reduce((sum, r) => sum + (t.perRound[r.id] ?? 0), 0),
+        }));
+        totals.sort((a, b) => b.total - a.total);
+        const m = new Map<string, number>();
+        let lastT: number | null = null;
+        let lastR = 0;
+        totals.forEach((t, i) => {
+          if (t.total !== lastT) {
+            lastR = i + 1;
+            lastT = t.total;
+          }
+          m.set(t.id, lastR);
+        });
+        return m;
+      };
+      const before = rankAfter(idx - 1);
+      const after = rankAfter(idx);
+      let bestMove = { name: "", gain: 0, from: 0, to: 0 };
+      for (const u of users) {
+        const from = before.get(u.id) ?? 0;
+        const to = after.get(u.id) ?? 0;
+        if (from - to > bestMove.gain) bestMove = { name: u.name, gain: from - to, from, to };
+      }
+      if (bestMove.gain > 0) {
+        cards.push({ title: "Biggest climb", main: bestMove.name, sub: `up ${bestMove.gain} spot${bestMove.gain === 1 ? "" : "s"} (${bestMove.from} → ${bestMove.to})` });
+      }
+    }
+  }
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       {back}
@@ -125,6 +188,18 @@ export default async function LineupsPage({ params }: { params: { roundId: strin
       <p className="mb-6 mt-1 text-sm text-black/50">
         Everyone&apos;s locked roster, ranked by round score (×{round.multiplier.toFixed(2)}). Tap a name to open their lineup.
       </p>
+
+      {cards.length > 0 && (
+        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {cards.map((c) => (
+            <div key={c.title} className="border border-grid bg-panel p-3">
+              <div className="font-mono text-[10px] uppercase tracking-wide text-amber">{c.title}</div>
+              <div className="mt-1 truncate font-display text-lg">{c.main}</div>
+              <div className="mt-0.5 text-xs text-black/50">{c.sub}</div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="space-y-2">
         {ranked.map((l) => (
