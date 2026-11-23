@@ -6,13 +6,19 @@ export async function POST(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
 
-  const { slotId, playerId, kickTeamId } = await req.json();
+  const { slotId, playerId, kickTeamId, remove } = await req.json();
   const slot = await prisma.slot.findUnique({ where: { id: slotId }, include: { round: true } });
   if (!slot) return NextResponse.json({ error: "Slot not found" }, { status: 404 });
 
   // Server-side lock enforcement — never trust the client's clock.
   if (new Date() >= slot.round.lockTime) {
     return NextResponse.json({ error: "This round is locked" }, { status: 403 });
+  }
+
+  // Remove whoever is in this seat.
+  if (remove) {
+    await prisma.survivorPick.deleteMany({ where: { userId: user.id, slotId } });
+    return NextResponse.json({ ok: true });
   }
 
   if (slot.position === "KICK") {

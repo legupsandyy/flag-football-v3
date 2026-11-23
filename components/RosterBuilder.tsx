@@ -107,7 +107,7 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
     setPickerSlot(s);
   }
 
-  async function submitPick(body: { slotId: string; playerId?: string; kickTeamId?: string }) {
+  async function submitPick(body: { slotId: string; playerId?: string; kickTeamId?: string; remove?: boolean }) {
     setSaving(true);
     setError(null);
     const res = await fetch("/api/survivor/pick", {
@@ -257,6 +257,15 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
                 <X size={18} className="text-black/40" />
               </button>
             </div>
+
+            {pickerSlot.pick && (
+              <button
+                onClick={() => submitPick({ slotId: pickerSlot.id, remove: true })}
+                className="row-line flex min-h-[48px] w-full items-center gap-2 px-4 py-2 text-left font-mono text-sm text-brick hover:bg-brick/5"
+              >
+                <X size={15} /> remove {pickerSlot.position === "KICK" ? "this kicker" : "this player"} from my lineup
+              </button>
+            )}
 
             {error && <div className="border-b border-brick/30 bg-brick/10 px-4 py-2 font-mono text-xs text-brick">{error}</div>}
 
