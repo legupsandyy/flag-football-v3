@@ -25,14 +25,28 @@ async function load() {
   const kickers = await prisma.kickerStat.findMany();
   const rules = {
     pickem: await getRules("pickem"),
+    props: await getRules("props"),
     survivor: await getRules("survivor"),
     dk: await getRules("dk"),
   };
   const payouts = await getPayouts();
+  const sbGame = await prisma.game.findFirst({ where: { slateId: "sb" }, orderBy: { kickoff: "asc" } });
+  let propKey: { answers?: Record<string, string>; total?: number | null } = {};
+  try {
+    propKey = JSON.parse((await getSetting("propAnswers")) || "{}");
+  } catch {
+    propKey = {};
+  }
+  const props = {
+    away: sbGame?.awayTeam ?? "",
+    home: sbGame?.homeTeam ?? "",
+    answers: propKey.answers ?? {},
+    total: typeof propKey.total === "number" ? String(propKey.total) : "",
+  };
   const roundFinal: Record<string, boolean> = {};
   for (const id of PRIZE_ROUNDS) roundFinal[id] = (await getSetting(`roundFinal_${id}`)) === "1";
   const memberCount = users.length;
-  return { roundFinal, payouts, memberCount, rules, slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers };
+  return { props, roundFinal, payouts, memberCount, rules, slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers };
 }
 
 export default async function AdminPage() {
@@ -69,7 +83,7 @@ export default async function AdminPage() {
       </div>
     );
   }
-  const { roundFinal, payouts, memberCount, rules, slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers } = loaded;
+  const { props, roundFinal, payouts, memberCount, rules, slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers } = loaded;
 
   return (
     <div className="px-5 py-8 max-w-2xl mx-auto">
@@ -82,6 +96,7 @@ export default async function AdminPage() {
         rules={rules}
         payouts={payouts}
         roundFinal={roundFinal}
+        props={props}
         memberCount={memberCount}
         slates={slates.map((s) => ({
           id: s.id,

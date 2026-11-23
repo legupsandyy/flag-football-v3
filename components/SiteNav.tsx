@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Flame, Target, Coins, Home, Trophy } from "lucide-react";
+import { Flame, Target, Coins, Home, Trophy, Sparkles } from "lucide-react";
 import Logo from "./Logo";
 
 const ITEMS = [
   { href: "/survivor", label: "Survivor", short: "Survivor", icon: Flame },
   { href: "/pickem", label: "Pick'em", short: "Pick'em", icon: Target },
   { href: "/dk-slates", label: "DK Slates", short: "DK", icon: Coins },
+  { href: "/props", label: "Super Bowl Props", short: "Props", icon: Sparkles },
   { href: "/standings", label: "Standings", short: "Ranks", icon: Trophy },
 ];
 

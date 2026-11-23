@@ -1,9 +1,10 @@
 import { getSetting } from "./settings";
 
-export type RuleKind = "pickem" | "survivor" | "dk";
+export type RuleKind = "pickem" | "survivor" | "dk" | "props";
 
 export const RULE_LABELS: Record<RuleKind, string> = {
   pickem: "Pick'em (ATS + O/U)",
+  props: "Super Bowl props",
   survivor: "Survivor",
   dk: "DK Slates",
 };
@@ -17,6 +18,13 @@ export const DEFAULT_RULES: Record<RuleKind, string> = {
     "**Grand Salami:** the posted total of the combined scores of every team in every game that round. Pick Over or Under on it. A correct pick earns **3 points**. It is not played for the Super Bowl, since that is a stand-alone game.",
     "**Super Bowl pick:** before Wild Card weekend begins, choose who you think wins the Super Bowl. If your team wins, it adds **4 points** to your running total.",
     "**Tiebreaker:** ties go to the person with the highest individual DK slate score.",
+  ].join("\n"),
+  props: [
+    "Answer **10 questions** about the Super Bowl. Each right answer is **1 point**, and the most points wins the props prize.",
+    "**Tiebreaker:** also guess the **total points** scored by both teams. If people are tied on points, the closest guess wins. If it's still tied, the prize is split.",
+    "Props **lock at the Super Bowl kickoff**. Answers are filled in by the commissioner during and after the game.",
+    "**Missed kick:** a missed field goal, or a missed or blocked extra point, by either team. A missed 2-point conversion does not count.",
+    "**Three in a row:** three scores in a row by the same team with no points from the other team in between. Touchdowns, field goals and safeties all count as scores. An extra point does not count as its own score.",
   ].join("\n"),
   survivor: [
     "Fill each lineup with **one player from each team** in the playoff player pool. Roster size depends on how many teams are playing (8 teams = 8 players, 1 from each team). There are **no salaries or price limits**.",

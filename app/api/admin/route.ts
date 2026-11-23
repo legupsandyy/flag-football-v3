@@ -5,6 +5,7 @@ import { getSetting, setSetting } from "@/lib/settings";
 import { NFL_TEAMS } from "@/lib/nflTeams";
 import { syncRoundSlots } from "@/lib/survivorAdmin";
 import { parseYards, slugify } from "@/lib/scoring";
+import { PROP_QUESTIONS, validAnswer } from "@/lib/props";
 
 export const dynamic = "force-dynamic";
 
@@ -94,6 +95,23 @@ async function handle(body: any) {
       return NextResponse.json({ ok: true });
     }
 
+    case "savePropAnswers": {
+      const answers: Record<string, string> = {};
+      for (const q of PROP_QUESTIONS) {
+        const a = body.answers?.[q.id];
+        if (a === undefined || a === null || a === "") continue;
+        if (!validAnswer(q, String(a))) return bad("Bad answer for " + q.id);
+        answers[q.id] = String(a);
+      }
+      let total: number | null = null;
+      if (body.total !== undefined && body.total !== null && String(body.total).trim() !== "") {
+        total = Number(body.total);
+        if (!Number.isFinite(total) || total < 0) return bad("Total points must be a number.");
+      }
+      await setSetting("propAnswers", JSON.stringify({ answers, total }));
+      return NextResponse.json({ ok: true });
+    }
+
     case "setRoundFinal": {
       if (!["wc", "div", "conf"].includes(body.roundId)) return bad("Unknown round.");
       await setSetting(`roundFinal_${body.roundId}`, body.final ? "1" : "");
@@ -117,7 +135,7 @@ async function handle(body: any) {
     }
 
     case "saveRules": {
-      if (!["pickem", "survivor", "dk"].includes(body.kind)) return bad("Unknown contest.");
+      if (!["pickem", "survivor", "dk", "props"].includes(body.kind)) return bad("Unknown contest.");
       const text = typeof body.text === "string" ? body.text.trim() : "";
       await setSetting(`rules_${body.kind}`, text); // empty = go back to the original rules
       return NextResponse.json({ ok: true });

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Flame, Target, Coins, Clock, ChevronRight } from "lucide-react";
+import { Flame, Target, Coins, Sparkles, Clock, ChevronRight } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getNextUp } from "@/lib/nextUp";
 import { loadStandings } from "@/lib/standingsData";
@@ -14,6 +14,7 @@ const CONTESTS = [
   { href: "/survivor", label: "Survivor", desc: "Build a roster each round.", icon: Flame, idx: 0 },
   { href: "/pickem", label: "Pick'em", desc: "Spread and over/under on every game.", icon: Target, idx: 1 },
   { href: "/dk-slates", label: "DK Slates", desc: "Real DraftKings scores.", icon: Coins, idx: 2 },
+  { href: "/props", label: "Super Bowl Props", desc: "Ten questions about the big game.", icon: Sparkles, idx: -1 },
 ];
 
 function ordinal(n: number) {
@@ -64,10 +65,10 @@ export default async function HomePage() {
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         {CONTESTS.map((c) => {
           const Icon = c.icon;
-          const rank = mine && mine.started[c.idx] ? mine.ranks[c.idx] : null;
+          const rank = mine && c.idx >= 0 && mine.started[c.idx] ? mine.ranks[c.idx] : null;
           return (
             <Link
               key={c.href}
@@ -84,7 +85,7 @@ export default async function HomePage() {
                 <div className="font-display text-lg">{c.label}</div>
                 <div className="text-sm text-black/50">{c.desc}</div>
               </div>
-              {mine && (
+              {mine && c.idx >= 0 && (
                 <div className="border-t border-grid pt-3 font-mono text-xs text-black/50">
                   {rank ? (
                     <>

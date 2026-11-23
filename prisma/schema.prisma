@@ -20,6 +20,7 @@ model User {
   ouPicks       OuPick[]
   salamiPicks   SalamiPick[]
   superBowlPick SuperBowlPick?
+  propPicks     PropPick[]
   dkScores      DkScore[]
 }
 
@@ -165,6 +166,17 @@ model SuperBowlPick {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   team   String
+}
+
+// Super Bowl props: one row per person per question. qid "total" is the tiebreaker guess (combined points).
+model PropPick {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  qid    String
+  answer String
+
+  @@unique([userId, qid])
 }
 
 // Simple key/value settings: "playoffTeams" (one team per line), "superBowlWinner".

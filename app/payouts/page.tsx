@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { loadStandings } from "@/lib/standingsData";
+import { loadProps } from "@/lib/propsData";
 import { loadRoundWinners } from "@/lib/roundWinners";
 import { getPayouts, PAYOUT_KEYS, PAYOUT_LABELS, prizeName, money, PayoutKey } from "@/lib/payouts";
 
@@ -18,10 +19,17 @@ export default async function PayoutsPage() {
   const players = await prisma.user.count();
   const standings = await loadStandings(me.id);
   const roundWinners = await loadRoundWinners();
+  const props = await loadProps(me.id);
 
   const perPerson = PAYOUT_KEYS.reduce((sum, k) => sum + config[k].buyIn, 0);
 
   function leaders(key: PayoutKey, place: number): string | null {
+    if (key === "props") {
+      if (props.graded === 0 || place !== 0) return null;
+      const top = props.rows[0]?.correct;
+      const names = props.rows.filter((r) => r.correct === top && (props.rows[0].diff === null || r.diff === props.rows[0].diff)).map((r) => r.name);
+      return names.length ? names.join(", ") : null;
+    }
     if (key === "rounds") {
       const w = roundWinners[place];
       if (!w || w.names.length === 0) return null;
