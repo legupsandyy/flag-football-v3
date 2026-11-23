@@ -82,14 +82,16 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
         .filter(Boolean)
     );
     const q = query.trim().toLowerCase();
-    return state.players.filter((p) => {
-      if (usedTeams.has(p.teamId)) return false;
+    const list = state.players.filter((p) => {
       if (taken.has(p.id) && p.id !== pickerSlot.pick?.player?.id) return false;
       if (!(pickerSlot.position === "FLEX" || pickerSlot.position === "SUPER FLEX") && p.pos !== pickerSlot.position) {
         return false;
       }
       return !q || p.name.toLowerCase().includes(q) || p.teamName.toLowerCase().includes(q);
     });
+    // Players from teams you've already used stay visible, but greyed out and last.
+    const blocked = (p: Player) => usedTeams.has(p.teamId);
+    return [...list.filter((p) => !blocked(p)), ...list.filter(blocked)].map((p) => ({ ...p, blocked: blocked(p) }));
   }, [state, pickerSlot, query]);
 
   if (!state) return <div className="px-4 py-8 font-mono text-sm text-black/30">loading…</div>;
@@ -292,7 +294,8 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
                   <button
                     key={p.id}
                     onClick={() => submitPick({ slotId: pickerSlot.id, playerId: p.id })}
-                    style={{ borderLeft: `6px solid ${p.teamColor ?? "transparent"}` }}
+                    disabled={p.blocked}
+                    style={{ borderLeft: `6px solid ${p.teamColor ?? "transparent"}`, opacity: p.blocked ? 0.4 : 1 }}
                     className="row-line flex min-h-[52px] w-full items-center justify-between px-4 py-2 text-left last:border-b-0 hover:bg-black/[0.03] active:bg-turf/5"
                   >
                     <div className="min-w-0">
@@ -302,7 +305,11 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
                         <TeamChip name={p.teamName} color={p.teamColor} />
                       </div>
                     </div>
-                    {p.dkPoints > 0 && <span className="font-mono text-xs text-amber">{p.dkPoints.toFixed(2)}</span>}
+                    {p.blocked ? (
+                      <span className="font-mono text-[10px] uppercase text-black/50">team already used</span>
+                    ) : (
+                      p.dkPoints > 0 && <span className="font-mono text-xs text-amber">{p.dkPoints.toFixed(2)}</span>
+                    )}
                   </button>
                 ))
               )}
