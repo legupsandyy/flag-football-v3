@@ -159,6 +159,15 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
         )}
       </div>
 
+      {round.locked && (
+        <Link
+          href={`/survivor/${round.id}/lineups`}
+          className="mt-3 inline-block border border-turf px-3 py-1.5 font-mono text-xs text-turf transition-colors hover:bg-turf hover:text-white"
+        >
+          see everyone&apos;s lineups →
+        </Link>
+      )}
+
       {empty ? (
         <div className="mt-6 border border-grid bg-panel px-4 py-8 text-center text-sm text-black/50">
           This round isn&apos;t set up yet. Check back once the matchups are in.
