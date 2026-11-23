@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import GameForm, { AdminGame } from "./GameForm";
 import DkSection, { DkSlateAdmin } from "./DkSection";
 import { RULE_LABELS, DEFAULT_RULES, RuleKind } from "@/lib/rules";
+import { PayoutConfig, PAYOUT_KEYS, PAYOUT_LABELS, money } from "@/lib/payouts";
 import SurvivorAdmin, { RoundAdmin, PlayerAdmin, KickerAdmin } from "./SurvivorAdmin";
 
 type AdminSlate = { id: string; label: string; salamiLine: number | null; games: AdminGame[] };
@@ -22,6 +23,67 @@ async function call(body: Record<string, unknown>) {
   });
   const data = await res.json().catch(() => ({}));
   return { ok: res.ok, error: data.error as string | undefined };
+}
+
+function PayoutsEditor({ payouts, memberCount }: { payouts: PayoutConfig; memberCount: number }) {
+  const router = useRouter();
+  const [buyIns, setBuyIns] = useState<Record<string, string>>(() =>
+    Object.fromEntries(PAYOUT_KEYS.map((k) => [k, String(payouts[k].buyIn)]))
+  );
+  const [prizes, setPrizes] = useState<Record<string, string>>(() =>
+    Object.fromEntries(PAYOUT_KEYS.map((k) => [k, payouts[k].prizes.join(", ")]))
+  );
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const parse = (t: string) =>
+    t
+      .split(",")
+      .map((x) => x.trim())
+      .filter(Boolean)
+      .map(Number);
+
+  async function save() {
+    const config: Record<string, { buyIn: number; prizes: number[] }> = {};
+    for (const k of PAYOUT_KEYS) config[k] = { buyIn: Number(buyIns[k]), prizes: parse(prizes[k]) };
+    const r = await call({ action: "savePayouts", config });
+    setMsg(r.ok ? "Saved." : r.error ?? "Couldn't save.");
+    if (r.ok) router.refresh();
+  }
+
+  return (
+    <div className="space-y-3">
+      {PAYOUT_KEYS.map((k) => {
+        const pot = Number(buyIns[k] || 0) * memberCount;
+        const paid = parse(prizes[k]).reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0);
+        const off = Math.abs(pot - paid) > 0.001;
+        return (
+          <div key={k} className="border border-grid bg-panel p-3 space-y-2">
+            <div className="font-display text-sm">{PAYOUT_LABELS[k]}</div>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="text-xs text-black/50">
+                buy-in ($ each)
+                <input className={input} inputMode="decimal" value={buyIns[k]} onChange={(e) => setBuyIns({ ...buyIns, [k]: e.target.value })} />
+              </label>
+              <label className="text-xs text-black/50">
+                prizes ($, comma-separated, 1st first)
+                <input className={input} value={prizes[k]} onChange={(e) => setPrizes({ ...prizes, [k]: e.target.value })} />
+              </label>
+            </div>
+            <div className={`font-mono text-xs ${off ? "text-brick" : "text-black/40"}`}>
+              pot with {memberCount} players: {money(pot)} · prizes add up to {money(paid)}
+              {off && " — these don't match"}
+            </div>
+          </div>
+        );
+      })}
+      <div className="flex items-center gap-3">
+        <button onClick={save} className={btn}>
+          save
+        </button>
+        {msg && <span className="font-mono text-xs text-turf">{msg}</span>}
+      </div>
+    </div>
+  );
 }
 
 function RulesEditor({ kind, text }: { kind: RuleKind; text: string }) {
@@ -163,6 +225,8 @@ function MemberRow({ member }: { member: Member }) {
 }
 
 export default function AdminPanel({
+  payouts,
+  memberCount,
   rules,
   slates,
   members,
@@ -171,6 +235,8 @@ export default function AdminPanel({
   dkSlates,
   survivor,
 }: {
+  payouts: PayoutConfig;
+  memberCount: number;
   rules: Record<RuleKind, string>;
   survivor: { teamIds: string[]; rounds: RoundAdmin[]; players: PlayerAdmin[]; kickers: KickerAdmin[] };
   dkSlates: DkSlateAdmin[];
@@ -186,6 +252,15 @@ export default function AdminPanel({
 
   return (
     <div className="space-y-10">
+      <section>
+        <h2 className="font-display text-base mb-1">Buy-ins and payouts</h2>
+        <p className="mb-2 text-xs text-black/50">
+          Shown on the Payouts page. The pot is the buy-in times the number of people who&apos;ve joined, so the check line turns red if the
+          prizes don&apos;t add up to it.
+        </p>
+        <PayoutsEditor payouts={payouts} memberCount={memberCount} />
+      </section>
+
       <section>
         <h2 className="font-display text-base mb-1">Rules</h2>
         <p className="mb-2 text-xs text-black/50">

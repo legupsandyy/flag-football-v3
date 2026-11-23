@@ -102,12 +102,14 @@ export default async function HomePage() {
       </div>
 
       {user && (
-        <Link
-          href="/standings"
-          className="mt-6 inline-flex items-center gap-1 font-mono text-xs text-black/50 transition-colors hover:text-turf"
-        >
-          full standings <ChevronRight size={13} />
-        </Link>
+        <div className="mt-6 flex gap-5">
+          <Link href="/standings" className="inline-flex items-center gap-1 font-mono text-xs text-black/50 transition-colors hover:text-turf">
+            full standings <ChevronRight size={13} />
+          </Link>
+          <Link href="/payouts" className="inline-flex items-center gap-1 font-mono text-xs text-black/50 transition-colors hover:text-turf">
+            payouts <ChevronRight size={13} />
+          </Link>
+        </div>
       )}
 
       {!user && (

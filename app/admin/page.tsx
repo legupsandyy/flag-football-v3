@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { isAdmin } from "@/lib/admin";
 import { getSetting } from "@/lib/settings";
 import { getRules } from "@/lib/rules";
+import { getPayouts } from "@/lib/payouts";
 import AdminLogin from "@/components/admin/AdminLogin";
 import AdminPanel from "@/components/admin/AdminPanel";
 
@@ -27,7 +28,9 @@ async function load() {
     survivor: await getRules("survivor"),
     dk: await getRules("dk"),
   };
-  return { rules, slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers };
+  const payouts = await getPayouts();
+  const memberCount = users.length;
+  return { payouts, memberCount, rules, slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers };
 }
 
 export default async function AdminPage() {
@@ -64,7 +67,7 @@ export default async function AdminPage() {
       </div>
     );
   }
-  const { rules, slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers } = loaded;
+  const { payouts, memberCount, rules, slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers } = loaded;
 
   return (
     <div className="px-5 py-8 max-w-2xl mx-auto">
@@ -75,6 +78,8 @@ export default async function AdminPage() {
       </p>
       <AdminPanel
         rules={rules}
+        payouts={payouts}
+        memberCount={memberCount}
         slates={slates.map((s) => ({
           id: s.id,
           label: s.label,

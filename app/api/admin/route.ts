@@ -94,6 +94,22 @@ async function handle(body: any) {
       return NextResponse.json({ ok: true });
     }
 
+    case "savePayouts": {
+      const keys = ["dk", "survivor", "pickem", "rounds", "props"];
+      const cfg: Record<string, { buyIn: number; prizes: number[] }> = {};
+      for (const k of keys) {
+        const c = body.config?.[k];
+        const buyIn = Number(c?.buyIn);
+        const prizes = Array.isArray(c?.prizes) ? c.prizes.map((n: unknown) => Number(n)) : [];
+        if (!Number.isFinite(buyIn) || buyIn < 0 || prizes.some((n: number) => !Number.isFinite(n) || n < 0)) {
+          return bad("Check the numbers for " + k + ".");
+        }
+        cfg[k] = { buyIn, prizes };
+      }
+      await setSetting("payouts", JSON.stringify(cfg));
+      return NextResponse.json({ ok: true });
+    }
+
     case "saveRules": {
       if (!["ats", "ou", "survivor", "dk"].includes(body.kind)) return bad("Unknown contest.");
       const text = typeof body.text === "string" ? body.text.trim() : "";
