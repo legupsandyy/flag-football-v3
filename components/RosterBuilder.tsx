@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { Lock, Clock, X, Plus, Search, ChevronLeft } from "lucide-react";
 import LocalTime from "./LocalTime";
+import TeamLogo from "./TeamLogo";
 
 interface Player {
   id: string;
@@ -46,11 +47,18 @@ function textOn(hex: string) {
   return lum > 0.65 ? "#1a1a1a" : "#ffffff";
 }
 
-function TeamChip({ name, color }: { name: string; color?: string }) {
-  if (!color) return <span>{name}</span>;
-  return (
+function TeamChip({ name, color, teamId }: { name: string; color?: string; teamId?: string }) {
+  const chip = color ? (
     <span className="rounded-sm px-1.5 py-0.5 text-[11px] font-semibold" style={{ backgroundColor: color, color: textOn(color) }}>
       {name}
+    </span>
+  ) : (
+    <span>{name}</span>
+  );
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <TeamLogo teamId={teamId} />
+      {chip}
     </span>
   );
 }
@@ -212,7 +220,7 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
                     {s.position === "KICK" ? (
                       s.pick?.kickTeamId ? (
                         <div className="flex items-center gap-1.5 text-[15px] font-semibold">
-                          <TeamChip name={teamInfo?.name ?? s.pick.kickTeamId.toUpperCase()} color={teamInfo?.color} /> kicker
+                          <TeamChip name={teamInfo?.name ?? s.pick.kickTeamId.toUpperCase()} color={teamInfo?.color} teamId={s.pick.kickTeamId} /> kicker
                         </div>
                       ) : (
                         <PlaceholderText locked={round.locked} text="pick a kicker's team" />
@@ -221,7 +229,7 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
                       <>
                         <div className="truncate text-[15px] font-semibold">{s.pick.player.name}</div>
                         <div className="mt-0.5 text-xs">
-                          <TeamChip name={teamInfo?.name ?? s.pick.player.teamName ?? s.pick.player.teamId.toUpperCase()} color={teamInfo?.color} />
+                          <TeamChip name={teamInfo?.name ?? s.pick.player.teamName ?? s.pick.player.teamId.toUpperCase()} color={teamInfo?.color} teamId={s.pick.player.teamId} />
                         </div>
                       </>
                     ) : (
@@ -299,7 +307,7 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
                     style={{ borderLeft: `6px solid ${state.teams?.[tid]?.color ?? "transparent"}` }}
                     className="row-line flex min-h-[52px] w-full items-center justify-between px-4 py-2 text-left last:border-b-0 hover:bg-black/[0.03] active:bg-turf/5"
                   >
-                    <TeamChip name={state.teams?.[tid]?.name ?? tid.toUpperCase()} color={state.teams?.[tid]?.color} />
+                    <TeamChip name={state.teams?.[tid]?.name ?? tid.toUpperCase()} color={state.teams?.[tid]?.color} teamId={tid} />
                     <span className="font-mono text-xs text-amber">
                       {(kickerScores[tid] ?? 0) > 0 ? (kickerScores[tid] ?? 0).toFixed(2) : ""}
                     </span>
@@ -320,7 +328,7 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
                       <div className="truncate text-[15px] font-medium">{p.name}</div>
                       <div className="mt-0.5 flex items-center gap-1.5 text-xs text-black/50">
                         <span>{p.pos}</span>
-                        <TeamChip name={p.teamName} color={p.teamColor} />
+                        <TeamChip name={p.teamName} color={p.teamColor} teamId={p.teamId} />
                       </div>
                     </div>
                     {p.blocked ? (

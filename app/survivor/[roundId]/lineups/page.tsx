@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { kickerPoints, round2 } from "@/lib/scoring";
 import { loadSurvivorScores } from "@/lib/survivorScores";
+import TeamLogo from "@/components/TeamLogo";
 import RankBadge from "@/components/RankBadge";
 
 export const dynamic = "force-dynamic";
@@ -18,10 +19,13 @@ function textOn(hex: string) {
   return lum > 0.65 ? "#1a1a1a" : "#ffffff";
 }
 
-function Chip({ name, color }: { name: string; color: string }) {
+function Chip({ name, color, teamId }: { name: string; color: string; teamId?: string }) {
   return (
-    <span className="rounded-sm px-1.5 py-0.5 text-[11px] font-semibold" style={{ backgroundColor: color, color: textOn(color) }}>
-      {name}
+    <span className="inline-flex items-center gap-1.5">
+      <TeamLogo teamId={teamId} />
+      <span className="rounded-sm px-1.5 py-0.5 text-[11px] font-semibold" style={{ backgroundColor: color, color: textOn(color) }}>
+        {name}
+      </span>
     </span>
   );
 }
@@ -90,6 +94,7 @@ export default async function LineupsPage({ params }: { params: { roundId: strin
               id: p.id,
               pos: "K",
               label: "Kicker",
+              teamId: p.kickTeamId,
               teamName: t?.name ?? p.kickTeamId.toUpperCase(),
               color: t?.color ?? "#999999",
               pts: kickerScore.get(p.kickTeamId) ?? 0,
@@ -99,6 +104,7 @@ export default async function LineupsPage({ params }: { params: { roundId: strin
             id: p.id,
             pos: p.slot.position === "SUPER FLEX" ? "S-FLEX" : p.slot.position,
             label: p.player?.name ?? "—",
+            teamId: p.player?.teamId ?? "",
             teamName: p.player?.team.name ?? "",
             color: p.player?.team.color ?? "#999999",
             pts: p.player?.dkPoints ?? 0,
@@ -223,7 +229,7 @@ export default async function LineupsPage({ params }: { params: { roundId: strin
                     <div className="min-w-0 flex-1">
                       <div className="truncate font-medium">{p.label}</div>
                       <div className="mt-0.5">
-                        <Chip name={p.teamName} color={p.color} />
+                        <Chip name={p.teamName} color={p.color} teamId={p.teamId} />
                       </div>
                     </div>
                     <span className="font-mono text-xs text-amber">{p.pts > 0 ? p.pts.toFixed(2) : "—"}</span>
