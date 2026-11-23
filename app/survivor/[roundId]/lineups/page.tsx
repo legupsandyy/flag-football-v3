@@ -46,7 +46,7 @@ export default async function LineupsPage({ params }: { params: { roundId: strin
   // Lineups stay hidden until the round locks, so nobody can copy a pick.
   if (new Date() < round.lockTime) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-8">
+      <div className="mx-auto max-w-3xl px-4 py-10">
         {back}
         <h1 className="font-display text-3xl">{round.label} lineups</h1>
         <div className="mt-6 flex items-center gap-2 border border-grid bg-panel px-4 py-8 text-sm text-black/50">
@@ -188,7 +188,7 @@ export default async function LineupsPage({ params }: { params: { roundId: strin
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className="mx-auto max-w-3xl px-4 py-10">
       {back}
       <h1 className="font-display text-3xl">{round.label} lineups</h1>
       <p className="mb-6 mt-1 text-sm text-black/50">
@@ -199,7 +199,7 @@ export default async function LineupsPage({ params }: { params: { roundId: strin
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {cards.map((c) => (
             <div key={c.title} className="border border-grid bg-panel p-3">
-              <div className="font-mono text-[10px] uppercase tracking-wide text-amber">{c.title}</div>
+              <div className="font-mono text-[10px] uppercase tracking-wide text-turf">{c.title}</div>
               <div className="mt-1 truncate font-display text-lg">{c.main}</div>
               <div className="mt-0.5 text-xs text-black/50">{c.sub}</div>
             </div>
@@ -232,7 +232,7 @@ export default async function LineupsPage({ params }: { params: { roundId: strin
                         <Chip name={p.teamName} color={p.color} teamId={p.teamId} />
                       </div>
                     </div>
-                    <span className="font-mono text-xs text-amber">{p.pts > 0 ? p.pts.toFixed(2) : "—"}</span>
+                    <span className="font-mono text-xs text-ink2/70">{p.pts > 0 ? p.pts.toFixed(2) : "—"}</span>
                   </div>
                 ))
               )}

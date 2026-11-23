@@ -45,7 +45,7 @@ export default function Leaderboard() {
   return (
     <div>
       <div className="mb-3 flex items-center gap-2">
-        <Trophy size={15} className="text-amber" />
+        <Trophy size={15} className="text-turf" />
         <h2 className="font-display text-lg">Leaderboard</h2>
       </div>
       {rows.length === 0 ? (

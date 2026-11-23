@@ -16,7 +16,7 @@ export default async function SurvivorHub() {
   const now = new Date();
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className="mx-auto max-w-3xl px-4 py-10">
       <div className="mb-1 font-mono text-xs text-black/40">survivor</div>
       <h1 className="font-display text-3xl">Survivor</h1>
       <p className="mb-6 mt-1 text-sm text-black/50">
@@ -37,7 +37,7 @@ export default async function SurvivorHub() {
             >
               <div className="flex items-start justify-between">
                 <div className="font-display text-base">{r.label}</div>
-                <span className="font-mono text-sm font-semibold text-amber">×{r.multiplier.toFixed(2)}</span>
+                <span className="font-mono text-sm font-semibold text-turf">×{r.multiplier.toFixed(2)}</span>
               </div>
               <div className="mt-3 flex items-center justify-between font-mono text-[11px] text-black/50">
                 {!ready ? (

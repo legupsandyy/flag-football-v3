@@ -35,7 +35,7 @@ export default async function DkSlatesPage() {
   const fmt = (n: number) => (Math.round(n * 100) / 100).toString();
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className="mx-auto max-w-3xl px-4 py-10">
       <div className="mb-1 font-mono text-xs text-black/40">dk slates</div>
       <h1 className="font-display text-3xl">DK Slates</h1>
       <p className="mb-6 mt-1 text-sm text-black/50">

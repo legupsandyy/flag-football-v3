@@ -36,7 +36,7 @@ const CHIP: Record<string, string> = {
   TE: "border-turf/40 text-turf",
   FLEX: "border-ink2/30 text-ink2/70",
   "SUPER FLEX": "border-ink2/30 text-ink2/70",
-  KICK: "border-amber/50 text-amber",
+  KICK: "border-turf/40 text-turf",
 };
 
 // Text colour (white or near-black) that reads well on a team colour.
@@ -150,7 +150,7 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
 
       <div className="flex items-end justify-between">
         <h1 className="font-display text-3xl">{round.label}</h1>
-        <span className="mb-1 bg-amber/15 px-2 py-0.5 font-mono text-sm font-semibold text-amber">
+        <span className="mb-1 rounded-md bg-turf/10 px-2 py-0.5 font-mono text-sm font-semibold text-turf">
           ×{round.multiplier.toFixed(2)}
         </span>
       </div>
@@ -206,7 +206,7 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
                   disabled={round.locked || saving}
                   onClick={() => openPicker(s)}
                   style={{ borderLeft: `6px solid ${teamInfo?.color ?? "transparent"}` }}
-                  className="row-line flex min-h-[56px] w-full items-center gap-3 px-3 py-2 text-left transition-colors last:border-b-0 hover:bg-black/[0.03] active:bg-turf/5 disabled:cursor-default disabled:hover:bg-transparent"
+                  className="row-line flex min-h-[60px] w-full items-center gap-3 px-3 py-3 text-left transition-colors last:border-b-0 hover:bg-black/[0.03] active:bg-turf/5 disabled:cursor-default disabled:hover:bg-transparent"
                 >
                   <span
                     className={`w-14 shrink-0 border px-1 py-0.5 text-center font-mono text-[10px] uppercase tracking-wider ${
@@ -238,7 +238,7 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
                   </div>
 
                   {s.pick && (
-                    <span className="font-mono text-sm font-semibold text-amber">{pts > 0 ? pts.toFixed(2) : "—"}</span>
+                    <span className="font-mono text-sm font-semibold text-ink2">{pts > 0 ? pts.toFixed(2) : "—"}</span>
                   )}
                 </button>
               );
@@ -308,7 +308,7 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
                     className="row-line flex min-h-[52px] w-full items-center justify-between px-4 py-2 text-left last:border-b-0 hover:bg-black/[0.03] active:bg-turf/5"
                   >
                     <TeamChip name={state.teams?.[tid]?.name ?? tid.toUpperCase()} color={state.teams?.[tid]?.color} teamId={tid} />
-                    <span className="font-mono text-xs text-amber">
+                    <span className="font-mono text-xs text-ink2/70">
                       {(kickerScores[tid] ?? 0) > 0 ? (kickerScores[tid] ?? 0).toFixed(2) : ""}
                     </span>
                   </button>
@@ -334,7 +334,7 @@ export default function RosterBuilder({ roundId }: { roundId: string }) {
                     {p.blocked ? (
                       <span className="font-mono text-[10px] uppercase text-black/50">team already used</span>
                     ) : (
-                      p.dkPoints > 0 && <span className="font-mono text-xs text-amber">{p.dkPoints.toFixed(2)}</span>
+                      p.dkPoints > 0 && <span className="font-mono text-xs text-ink2/70">{p.dkPoints.toFixed(2)}</span>
                     )}
                   </button>
                 ))

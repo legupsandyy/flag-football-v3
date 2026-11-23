@@ -36,10 +36,10 @@ export default function SuperBowlPick({
   }
 
   return (
-    <div className="mb-8 border border-amber/40 bg-amber/5 p-3">
+    <div className="mb-8 border border-grid bg-panel p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 font-display text-sm">
-          <Trophy size={15} className="text-amber" /> Super Bowl winner
+          <Trophy size={15} className="text-turf" /> Super Bowl winner
         </div>
         <div className="font-mono text-[11px] text-black/50">4 pts</div>
       </div>

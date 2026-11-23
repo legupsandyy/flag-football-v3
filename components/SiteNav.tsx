@@ -59,7 +59,7 @@ export default function SiteNav({
           <div className="ml-auto shrink-0 sm:ml-2">
             {userName ? (
               <div className="flex items-center gap-2">
-                <span className="grid h-7 w-7 place-items-center rounded-full bg-amber/15 font-mono text-xs font-semibold text-amber">
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-turf/10 font-mono text-xs font-semibold text-turf">
                   {userName.trim().charAt(0).toUpperCase()}
                 </span>
                 <span className="hidden max-w-[110px] truncate text-sm text-black/60 md:inline">{userName}</span>

@@ -188,7 +188,7 @@ export default function PickBoard({ kind, slates }: { kind: Kind; slates: SlateV
             </div>
 
             {kind === "ou" && s.id !== "sb" && s.salamiLine !== null && (
-              <div className="mb-3 border border-amber/40 bg-amber/5 p-3">
+              <div className="mb-4 border border-grid bg-panel p-4">
                 <div className="mb-2.5 flex items-start justify-between gap-3">
                   <div>
                     <div className="font-display text-sm">Grand Salami</div>
@@ -198,7 +198,7 @@ export default function PickBoard({ kind, slates }: { kind: Kind; slates: SlateV
                   </div>
                   <div className="flex items-center gap-2">
                     <ResultChip result={s.salamiResult} />
-                    <span className="font-display text-xl text-amber">{s.salamiLine}</span>
+                    <span className="font-display text-xl text-turf">{s.salamiLine}</span>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -223,11 +223,11 @@ export default function PickBoard({ kind, slates }: { kind: Kind; slates: SlateV
               </div>
             )}
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {s.games.map((g) => {
                 const mine = gamePicks[g.id] ?? null;
                 return (
-                  <div key={g.id} className="border border-grid bg-panel p-3">
+                  <div key={g.id} className="border border-grid bg-panel p-4">
                     <div className="mb-2.5 flex items-center justify-between gap-2">
                       <div className="font-mono text-[11px] text-black/50">
                         <LocalTime iso={g.kickoff} />
