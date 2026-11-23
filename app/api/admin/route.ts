@@ -94,6 +94,12 @@ async function handle(body: any) {
       return NextResponse.json({ ok: true });
     }
 
+    case "setRoundFinal": {
+      if (!["wc", "div", "conf"].includes(body.roundId)) return bad("Unknown round.");
+      await setSetting(`roundFinal_${body.roundId}`, body.final ? "1" : "");
+      return NextResponse.json({ ok: true });
+    }
+
     case "savePayouts": {
       const keys = ["dk", "survivor", "pickem", "rounds", "props"];
       const cfg: Record<string, { buyIn: number; prizes: number[] }> = {};

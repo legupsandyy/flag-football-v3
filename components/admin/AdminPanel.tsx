@@ -25,6 +25,37 @@ async function call(body: Record<string, unknown>) {
   return { ok: res.ok, error: data.error as string | undefined };
 }
 
+function RoundFinalBox({ roundFinal }: { roundFinal: Record<string, boolean> }) {
+  const router = useRouter();
+  const [state, setState] = useState(roundFinal);
+  const [msg, setMsg] = useState<string | null>(null);
+  const labels: Record<string, string> = { wc: "Wild Card", div: "Divisional", conf: "Conference" };
+
+  async function toggle(id: string, final: boolean) {
+    setState((s) => ({ ...s, [id]: final }));
+    const r = await call({ action: "setRoundFinal", roundId: id, final });
+    if (!r.ok) {
+      setState((s) => ({ ...s, [id]: !final }));
+      setMsg(r.error ?? "Couldn't save.");
+    } else {
+      setMsg(null);
+      router.refresh();
+    }
+  }
+
+  return (
+    <div className="border border-grid bg-panel p-3 space-y-2">
+      {Object.keys(labels).map((id) => (
+        <label key={id} className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={!!state[id]} onChange={(e) => toggle(id, e.target.checked)} />
+          {labels[id]} is final (award the round prize)
+        </label>
+      ))}
+      {msg && <div className="font-mono text-xs text-brick">{msg}</div>}
+    </div>
+  );
+}
+
 function PayoutsEditor({ payouts, memberCount }: { payouts: PayoutConfig; memberCount: number }) {
   const router = useRouter();
   const [buyIns, setBuyIns] = useState<Record<string, string>>(() =>
@@ -225,6 +256,7 @@ function MemberRow({ member }: { member: Member }) {
 }
 
 export default function AdminPanel({
+  roundFinal,
   payouts,
   memberCount,
   rules,
@@ -235,6 +267,7 @@ export default function AdminPanel({
   dkSlates,
   survivor,
 }: {
+  roundFinal: Record<string, boolean>;
   payouts: PayoutConfig;
   memberCount: number;
   rules: Record<RuleKind, string>;
@@ -259,6 +292,15 @@ export default function AdminPanel({
           prizes don&apos;t add up to it.
         </p>
         <PayoutsEditor payouts={payouts} memberCount={memberCount} />
+      </section>
+
+      <section>
+        <h2 className="font-display text-base mb-1">Survivor round prizes</h2>
+        <p className="mb-2 text-xs text-black/50">
+          The top score each round is shown as &ldquo;leading&rdquo; until you tick it final once all that round&apos;s scores are in. Then it
+          shows as the winner.
+        </p>
+        <RoundFinalBox roundFinal={roundFinal} />
       </section>
 
       <section>

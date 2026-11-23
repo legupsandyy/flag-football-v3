@@ -3,6 +3,7 @@ import { isAdmin } from "@/lib/admin";
 import { getSetting } from "@/lib/settings";
 import { getRules } from "@/lib/rules";
 import { getPayouts } from "@/lib/payouts";
+import { PRIZE_ROUNDS } from "@/lib/roundWinners";
 import AdminLogin from "@/components/admin/AdminLogin";
 import AdminPanel from "@/components/admin/AdminPanel";
 
@@ -28,8 +29,10 @@ async function load() {
     dk: await getRules("dk"),
   };
   const payouts = await getPayouts();
+  const roundFinal: Record<string, boolean> = {};
+  for (const id of PRIZE_ROUNDS) roundFinal[id] = (await getSetting(`roundFinal_${id}`)) === "1";
   const memberCount = users.length;
-  return { payouts, memberCount, rules, slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers };
+  return { roundFinal, payouts, memberCount, rules, slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers };
 }
 
 export default async function AdminPage() {
@@ -66,7 +69,7 @@ export default async function AdminPage() {
       </div>
     );
   }
-  const { payouts, memberCount, rules, slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers } = loaded;
+  const { roundFinal, payouts, memberCount, rules, slates, users, playoffTeams, superBowlWinner, dkSlates, teams, rounds, players, kickers } = loaded;
 
   return (
     <div className="px-5 py-8 max-w-2xl mx-auto">
@@ -78,6 +81,7 @@ export default async function AdminPage() {
       <AdminPanel
         rules={rules}
         payouts={payouts}
+        roundFinal={roundFinal}
         memberCount={memberCount}
         slates={slates.map((s) => ({
           id: s.id,

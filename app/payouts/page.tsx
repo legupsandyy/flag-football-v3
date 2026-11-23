@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { loadStandings } from "@/lib/standingsData";
+import { loadRoundWinners } from "@/lib/roundWinners";
 import { getPayouts, PAYOUT_KEYS, PAYOUT_LABELS, prizeName, money, PayoutKey } from "@/lib/payouts";
 
 export const dynamic = "force-dynamic";
@@ -16,10 +17,16 @@ export default async function PayoutsPage() {
   const config = await getPayouts();
   const players = await prisma.user.count();
   const standings = await loadStandings(me.id);
+  const roundWinners = await loadRoundWinners();
 
   const perPerson = PAYOUT_KEYS.reduce((sum, k) => sum + config[k].buyIn, 0);
 
   function leaders(key: PayoutKey, place: number): string | null {
+    if (key === "rounds") {
+      const w = roundWinners[place];
+      if (!w || w.names.length === 0) return null;
+      return `${w.names.join(", ")} (${w.final ? "winner" : "currently"})`;
+    }
     const idx = RANK_INDEX[key];
     if (idx === undefined || !standings.started[idx]) return null;
     const names = standings.rows.filter((r) => r.ranks[idx] === place + 1).map((r) => r.name);
@@ -51,7 +58,7 @@ export default async function PayoutsPage() {
                     <div key={i} className="row-line flex items-center justify-between gap-3 py-2 last:border-b-0">
                       <div className="min-w-0">
                         <div className="text-sm">{prizeName(k, i)}</div>
-                        {who && <div className="truncate text-xs text-turf">{who} (currently)</div>}
+                        {who && <div className="truncate text-xs text-turf">{k === "rounds" ? who : `${who} (currently)`}</div>}
                       </div>
                       <div className="font-display text-lg text-turf">{money(amount)}</div>
                     </div>

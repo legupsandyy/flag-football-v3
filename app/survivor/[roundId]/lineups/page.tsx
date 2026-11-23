@@ -5,6 +5,8 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { kickerPoints, round2 } from "@/lib/scoring";
 import { loadSurvivorScores } from "@/lib/survivorScores";
+import { loadRoundWinners } from "@/lib/roundWinners";
+import { money } from "@/lib/payouts";
 import TeamLogo from "@/components/TeamLogo";
 import RankBadge from "@/components/RankBadge";
 
@@ -131,7 +133,12 @@ export default async function LineupsPage({ params }: { params: { roundId: strin
   const anyScores = lineups.some((l) => l.total !== 0);
   if (anyScores) {
     const top = ranked[0];
-    cards.push({ title: "Round winner", main: top.name, sub: `${top.total.toFixed(2)} pts` });
+    const rw = (await loadRoundWinners()).find((w) => w.roundId === round.id);
+    cards.push({
+      title: rw?.final ? "Round winner" : rw ? "Round leader" : "Top score",
+      main: rw && rw.names.length > 1 ? rw.names.join(", ") : top.name,
+      sub: `${top.total.toFixed(2)} pts${rw ? ` · ${money(rw.each)} prize${rw.names.length > 1 ? " each" : ""}` : ""}`,
+    });
 
     // Player picks (not kickers), counted across all lineups.
     const byPlayer = new Map<string, { name: string; team: string; pts: number; count: number }>();

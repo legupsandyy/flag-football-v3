@@ -5,6 +5,8 @@ import Leaderboard from "@/components/Leaderboard";
 import LocalTime from "@/components/LocalTime";
 import RulesBlock from "@/components/RulesBlock";
 import { getCurrentUser } from "@/lib/auth";
+import { loadRoundWinners } from "@/lib/roundWinners";
+import { money } from "@/lib/payouts";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +16,7 @@ export default async function SurvivorHub() {
   if (!me) redirect("/login");
   const rounds = await prisma.round.findMany({ orderBy: { order: "asc" } });
   const now = new Date();
+  const winners = new Map((await loadRoundWinners()).map((w) => [w.roundId, w] as const));
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
@@ -29,6 +32,7 @@ export default async function SurvivorHub() {
         {rounds.map((r) => {
           const ready = (JSON.parse(r.teamIds) as string[]).length > 0;
           const locked = ready && now >= r.lockTime;
+          const win = winners.get(r.id);
           return (
             <Link
               key={r.id}
@@ -39,6 +43,11 @@ export default async function SurvivorHub() {
                 <div className="font-display text-base">{r.label}</div>
                 <span className="font-mono text-sm font-semibold text-turf">×{r.multiplier.toFixed(2)}</span>
               </div>
+              {win && win.names.length > 0 && (
+                <div className="mt-2 truncate text-xs text-turf">
+                  {win.final ? "Winner" : "Leading"}: {win.names.join(", ")} · {money(win.each)}
+                </div>
+              )}
               <div className="mt-3 flex items-center justify-between font-mono text-[11px] text-black/50">
                 {!ready ? (
                   <span>not set up yet</span>
