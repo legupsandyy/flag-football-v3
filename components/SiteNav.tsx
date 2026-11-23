@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Flame, Target, ArrowUpDown, Coins, Home } from "lucide-react";
+import { Flame, Target, ArrowUpDown, Coins, Home, Trophy } from "lucide-react";
 import Logo from "./Logo";
 
 const ITEMS = [
@@ -10,6 +10,7 @@ const ITEMS = [
   { href: "/ats", label: "ATS Pick'em", short: "ATS", icon: Target },
   { href: "/ou", label: "O/U Pick'em", short: "O/U", icon: ArrowUpDown },
   { href: "/dk-slates", label: "DK Slates", short: "DK", icon: Coins },
+  { href: "/standings", label: "Standings", short: "Ranks", icon: Trophy },
 ];
 
 function isActive(path: string, href: string) {
