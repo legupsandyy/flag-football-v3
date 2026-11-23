@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Check, Lock, ArrowUp, ArrowDown } from "lucide-react";
 import LocalTime from "./LocalTime";
 import { spreadLabel } from "@/lib/pickem";
+import { findTeam } from "@/lib/teamMatch";
+import TeamLogo from "./TeamLogo";
 import type { SlateView, GameView } from "@/lib/pickemData";
 
 type Kind = "ats" | "ou";
@@ -21,6 +23,35 @@ function ResultChip({ result }: { result: string | null }) {
       {result}
     </span>
   );
+}
+
+function TeamName({ name, className = "" }: { name: string; className?: string }) {
+  const t = findTeam(name);
+  return (
+    <span className={`inline-flex min-w-0 items-center gap-1.5 ${className}`}>
+      {t && (
+        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-white">
+          <TeamLogo teamId={t.id} size={20} />
+        </span>
+      )}
+      <span className="truncate">{name}</span>
+    </span>
+  );
+}
+
+// "Chiefs covered by 3.5" / "Went over by 3" once a game is final.
+function finalLine(kind: Kind, g: GameView): string | null {
+  if (!g.isFinal || g.awayScore === null || g.homeScore === null) return null;
+  if (kind === "ats") {
+    const margin = g.homeScore + g.homeSpread - g.awayScore;
+    if (margin === 0) return "Push — landed exactly on the spread";
+    const by = Math.abs(margin);
+    return `${margin > 0 ? g.home : g.away} covered by ${by}`;
+  }
+  const total = g.homeScore + g.awayScore;
+  if (total === g.total) return `Push — total landed on ${g.total}`;
+  const diff = Math.abs(total - g.total);
+  return `Total ${total} · went ${total > g.total ? "over" : "under"} by ${diff}`;
 }
 
 function Others({ groups }: { groups: { label: string; names: string[] }[] }) {
@@ -47,8 +78,10 @@ function Option({
   locked,
   result,
   onClick,
+  stripe,
   children,
 }: {
+  stripe?: string;
   selected: boolean;
   locked: boolean;
   result: string | null;
@@ -70,6 +103,7 @@ function Option({
     <button
       disabled={locked}
       onClick={onClick}
+      style={stripe ? { borderLeft: `6px solid ${stripe}` } : undefined}
       className={`relative min-h-[64px] flex-1 border px-3 py-2.5 text-left transition-colors ${cls} ${
         locked ? "cursor-default" : ""
       }`}
@@ -223,8 +257,9 @@ export default function PickBoard({ kind, slates }: { kind: Kind; slates: SlateV
                             locked={g.locked}
                             result={g.result}
                             onClick={() => pickGame(g, side)}
+                            stripe={findTeam(side === "away" ? g.away : g.home)?.color}
                           >
-                            <div className="truncate pr-5 text-[15px] font-semibold">{side === "away" ? g.away : g.home}</div>
+                            <TeamName className="pr-5 text-[15px] font-semibold" name={side === "away" ? g.away : g.home} />
                             <div className="font-mono text-sm opacity-80">{spreadLabel(g.homeSpread, side)}</div>
                           </Option>
                         ))}
@@ -232,8 +267,8 @@ export default function PickBoard({ kind, slates }: { kind: Kind; slates: SlateV
                     ) : (
                       <>
                         <div className="mb-2 flex items-baseline justify-between gap-2">
-                          <div className="min-w-0 truncate text-[15px] font-semibold">
-                            {g.away} <span className="font-normal text-black/30">at</span> {g.home}
+                          <div className="flex min-w-0 items-center gap-1.5 text-[15px] font-semibold">
+                            <TeamName name={g.away} /> <span className="font-normal text-black/30">at</span> <TeamName name={g.home} />
                           </div>
                           <div className="font-mono text-sm text-black/50">O/U {g.total}</div>
                         </div>
@@ -257,6 +292,9 @@ export default function PickBoard({ kind, slates }: { kind: Kind; slates: SlateV
                       </>
                     )}
 
+                    {finalLine(kind, g) && (
+                      <div className="mt-2 border-t border-grid pt-2 font-mono text-xs text-black/60">{finalLine(kind, g)}</div>
+                    )}
                     {g.locked && !mine && <div className="mt-2 font-mono text-xs text-black/40">no pick made</div>}
                     <Others groups={g.others} />
                   </div>
