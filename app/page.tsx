@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Flame, Target, Coins, Sparkles, Clock, ChevronRight } from "lucide-react";
+import { Flame, Target, Coins, Clock, ChevronRight } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getNextUp } from "@/lib/nextUp";
 import { loadStandings } from "@/lib/standingsData";
@@ -14,7 +14,6 @@ const CONTESTS = [
   { href: "/survivor", label: "Survivor", desc: "Build a roster each round.", icon: Flame, idx: 0 },
   { href: "/pickem", label: "Pick'em", desc: "Spread and over/under on every game.", icon: Target, idx: 1 },
   { href: "/dk-slates", label: "DK Slates", desc: "Real DraftKings scores.", icon: Coins, idx: 2 },
-  { href: "/props", label: "Super Bowl Props", desc: "Ten questions about the big game.", icon: Sparkles, idx: -1 },
 ];
 
 function ordinal(n: number) {

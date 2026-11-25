@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Flame, Target, Coins, Home, Trophy, Sparkles } from "lucide-react";
+import { Flame, Target, Coins, Home, Trophy } from "lucide-react";
 import Logo from "./Logo";
 
 const ITEMS = [
   { href: "/survivor", label: "Survivor", short: "Survivor", icon: Flame },
   { href: "/pickem", label: "Pick'em", short: "Pick'em", icon: Target },
   { href: "/dk-slates", label: "DK Slates", short: "DK", icon: Coins },
-  { href: "/props", label: "Super Bowl Props", short: "Props", icon: Sparkles },
   { href: "/standings", label: "Standings", short: "Ranks", icon: Trophy },
 ];
 
@@ -78,7 +77,7 @@ export default function SiteNav({
 
       {/* Phone tab bar */}
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-grid bg-panel/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden">
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-4">
           {[{ href: "/", short: "Home", icon: Home }, ...ITEMS].map((n) => {
             const active = n.href === "/" ? path === "/" : isActive(path, n.href);
             const Icon = n.icon;

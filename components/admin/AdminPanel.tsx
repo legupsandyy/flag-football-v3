@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import GameForm, { AdminGame } from "./GameForm";
 import DkSection, { DkSlateAdmin } from "./DkSection";
 import { RULE_LABELS, DEFAULT_RULES, RuleKind } from "@/lib/rules";
-import { PROP_QUESTIONS, optionsFor } from "@/lib/props";
 import { PayoutConfig, PAYOUT_KEYS, PAYOUT_LABELS, money } from "@/lib/payouts";
 import SurvivorAdmin, { RoundAdmin, PlayerAdmin, KickerAdmin } from "./SurvivorAdmin";
 
@@ -24,68 +23,6 @@ async function call(body: Record<string, unknown>) {
   });
   const data = await res.json().catch(() => ({}));
   return { ok: res.ok, error: data.error as string | undefined };
-}
-
-type PropsAdminData = { away: string; home: string; answers: Record<string, string>; total: string };
-
-function PropsAdmin({ props }: { props: PropsAdminData }) {
-  const router = useRouter();
-  const [answers, setAnswers] = useState<Record<string, string>>(props.answers);
-  const [total, setTotal] = useState(props.total);
-  const [msg, setMsg] = useState<string | null>(null);
-
-  async function save() {
-    const r = await call({ action: "savePropAnswers", answers, total });
-    setMsg(r.ok ? "Saved." : r.error ?? "Couldn't save.");
-    if (r.ok) router.refresh();
-  }
-
-  if (!props.away) {
-    return (
-      <div className="border border-grid bg-panel p-3 text-sm text-black/50">
-        Add the Super Bowl game first (round &ldquo;Super Bowl&rdquo; under games). Then the questions and team names appear here.
-      </div>
-    );
-  }
-
-  return (
-    <div className="border border-grid bg-panel p-3 space-y-3">
-      {PROP_QUESTIONS.map((q, i) => (
-        <div key={q.id}>
-          <div className="mb-1 text-sm">
-            <span className="mr-1.5 font-mono text-xs text-black/40">{i + 1}</span>
-            {q.text}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {optionsFor(q, props.away, props.home).map((o) => {
-              const on = answers[q.id] === o.value;
-              return (
-                <button
-                  key={o.value}
-                  onClick={() => setAnswers((a) => ({ ...a, [q.id]: on ? "" : o.value }))}
-                  className={`border px-3 py-1.5 font-mono text-xs transition-colors ${
-                    on ? "border-turf bg-turf text-white" : "border-grid hover:border-turf"
-                  }`}
-                >
-                  {o.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-      <label className="block text-xs text-black/50">
-        final total points (both teams) — used for the tiebreaker
-        <input className={input} inputMode="numeric" value={total} onChange={(e) => setTotal(e.target.value.replace(/[^0-9]/g, ""))} />
-      </label>
-      <div className="flex items-center gap-3">
-        <button onClick={save} className={btn}>
-          save answers
-        </button>
-        {msg && <span className="font-mono text-xs text-turf">{msg}</span>}
-      </div>
-    </div>
-  );
 }
 
 function RoundFinalBox({ roundFinal }: { roundFinal: Record<string, boolean> }) {
@@ -319,7 +256,6 @@ function MemberRow({ member }: { member: Member }) {
 }
 
 export default function AdminPanel({
-  props,
   roundFinal,
   payouts,
   memberCount,
@@ -331,7 +267,6 @@ export default function AdminPanel({
   dkSlates,
   survivor,
 }: {
-  props: PropsAdminData;
   roundFinal: Record<string, boolean>;
   payouts: PayoutConfig;
   memberCount: number;
@@ -369,21 +304,12 @@ export default function AdminPanel({
       </section>
 
       <section>
-        <h2 className="font-display text-base mb-1">Super Bowl props answers</h2>
-        <p className="mb-2 text-xs text-black/50">
-          Tap the correct answer for each question as it&apos;s decided (tap again to clear), then save. Add the final total points at the end for the
-          tiebreaker. Scores and standings update on their own.
-        </p>
-        <PropsAdmin props={props} />
-      </section>
-
-      <section>
         <h2 className="font-display text-base mb-1">Rules</h2>
         <p className="mb-2 text-xs text-black/50">
           One line = one bullet. Put **two stars** around words to make them bold. Save, and the contest page updates right away.
         </p>
         <div className="space-y-3">
-          {(["pickem", "props", "survivor", "dk"] as RuleKind[]).map((k) => (
+          {(["pickem", "survivor", "dk"] as RuleKind[]).map((k) => (
             <RulesEditor key={k} kind={k} text={rules[k]} />
           ))}
         </div>
