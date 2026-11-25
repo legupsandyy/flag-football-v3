@@ -7,6 +7,9 @@ import { SITE_NAME, SITE_SHORT } from "@/lib/site";
 export const metadata: Metadata = {
   title: SITE_NAME,
   description: "ATS, O/U, Survivor & DK Slates — one league, one roof.",
+  manifest: "/manifest.webmanifest",
+  icons: { apple: "/icons/apple-touch-icon.png" },
+  appleWebApp: { capable: true, title: SITE_SHORT, statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
